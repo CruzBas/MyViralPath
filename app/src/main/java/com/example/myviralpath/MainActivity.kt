@@ -20,7 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import com.example.myviralpath.ui.screens.PantallaLogin
+import com.example.myviralpath.ui.RegistrationScreen
 import com.example.myviralpath.ui.theme.MyViralPathTheme
 
 class MainActivity : ComponentActivity() {
@@ -28,15 +28,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PantallaLogin(
-                onLoginClick = { correo, contra ->
-                    //Se conectara con Supabase
-                    println("Correo: $correo, Contra: $contra")},
-                onRegistroClick = {
-                    //Navegacion a Registro
-                    println("Navegando a registro")
-                }
-            )
+            MyViralPathTheme {
+                RegistrationScreen()
+            }
         }
     }
 }
