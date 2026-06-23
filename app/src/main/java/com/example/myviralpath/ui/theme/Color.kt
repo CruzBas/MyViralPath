@@ -2,10 +2,11 @@ package com.example.myviralpath.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Colores del diseño
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val BackgroundOscuro = Color(0xFF0D1117)   //Azul muy oscuro para el fondo principal
+val NaranjaPrimario = Color(0xFFE65100)    // Naranja principal para acentos
+val BackgroundTxt = Color(0xFF161B22)      // Azul/Gris oscuro para el fondo de los inputs
+val BordeTxt = Color(0xFF30363D)           // Borde sutil para los inputs
+val TextoPrimario = Color(0xFFFFFFFF)      // Blanco para textos principales
+val TextoSecundario = Color(0xFF8B949E)    // Gris claro para subtítulos
