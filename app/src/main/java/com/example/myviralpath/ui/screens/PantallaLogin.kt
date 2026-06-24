@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myviralpath.ui.theme.*//Importacion de los colores de diseño
@@ -54,7 +55,7 @@ fun PantallaLogin(
 
         //Logo
         Image(
-            painter = painterResource(id = R.drawable.logovp),
+            painter = painterResource(id = R.drawable.ic_favorite),
             contentDescription = "Logo de ViralPath",
             modifier = Modifier
                 .size(80.dp)
@@ -103,7 +104,7 @@ fun PantallaLogin(
                 onValueChange = { correo = it },
                 placeholder = { Text("ejemplo@gmail.com", color = TextoSecundario)},
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(28.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -131,7 +132,7 @@ fun PantallaLogin(
                 onValueChange = { contra = it },
                 placeholder = { Text("*******", color = TextoSecundario)},
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(28.dp),
                 singleLine = true,
                 visualTransformation = if (contraVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -180,7 +181,7 @@ fun PantallaLogin(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,
                 contentColor = Color.Black
@@ -210,6 +211,17 @@ fun PantallaLogin(
             modifier = Modifier
                 .padding(bottom = 40.dp)
                 .clickable{ onRegistroClick() }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PantallaLoginPreview() {
+    MyViralPathTheme {
+        PantallaLogin(
+            onLoginClick = { _, _ -> },
+            onRegistroClick = { }
         )
     }
 }

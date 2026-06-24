@@ -1,6 +1,8 @@
 package com.example.myviralpath.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -10,17 +12,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myviralpath.R
 import com.example.myviralpath.ui.theme.*
 
 @Composable
-fun RegistrationScreen() {
+fun RegistrationScreen(onLoginClick: () -> Unit) {
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -35,21 +41,17 @@ fun RegistrationScreen() {
     ) {
         Spacer(modifier = Modifier.height(60.dp))
         // Logo Placeholder (Matching the shape in the image)
-        Box(
-            modifier = Modifier
-                .width(120.dp)
-                .height(80.dp)
-                .background(Color.White, RoundedCornerShape(16.dp)),
-            contentAlignment = Alignment.TopCenter
-        ) {
+
             // Placeholder content for logo: Green top half
-            Box(
+            Image(
+                painter = painterResource(id = R.drawable.ic_favorite),
+                contentDescription = "Logo de ViralPath",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .background(Color(0xFF8BAE9C), RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(16.dp)), //Bordes redondeados
+                contentScale = ContentScale.Crop // Se encarga de que la imagen llene el espacio sin distorsionarse
             )
-        }
+
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -151,9 +153,10 @@ fun RegistrationScreen() {
             Text(text = "¿Ya tienes una cuenta? ", color = TextoSecundario, fontSize = 14.sp)
             Text(
                 text = "Iniciar sesión",
-                color = TextoPrimario,
+                color = NaranjaPrimario,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onLoginClick() }
             )
         }
         Spacer(modifier = Modifier.height(32.dp))
@@ -167,7 +170,7 @@ fun CustomTextField(
     placeholder: String,
     isPassword: Boolean = false
 ) {
-    TextField(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = { Text(placeholder, color = TextoSecundario, fontSize = 14.sp) },
@@ -175,16 +178,14 @@ fun CustomTextField(
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(28.dp),
-        colors = TextFieldDefaults.colors(
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = NaranjaPrimario,
+            unfocusedBorderColor = BordeTxt,
             focusedContainerColor = BackgroundTxt,
             unfocusedContainerColor = BackgroundTxt,
-            disabledContainerColor = BackgroundTxt,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-            cursorColor = NaranjaPrimario,
             focusedTextColor = TextoPrimario,
-            unfocusedTextColor = TextoPrimario
+            unfocusedTextColor = TextoPrimario,
+            cursorColor = NaranjaPrimario
         ),
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         singleLine = true
@@ -243,6 +244,6 @@ fun SocialButton(text: String) {
 @Composable
 fun RegistrationScreenPreview() {
     MyViralPathTheme {
-        RegistrationScreen()
+        RegistrationScreen(onLoginClick = {})
     }
 }

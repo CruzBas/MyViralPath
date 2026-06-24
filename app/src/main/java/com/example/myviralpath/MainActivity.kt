@@ -17,10 +17,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.example.myviralpath.ui.RegistrationScreen
+import com.example.myviralpath.ui.screens.PantallaLogin
 import com.example.myviralpath.ui.theme.MyViralPathTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,7 +29,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyViralPathTheme {
-                RegistrationScreen()
+                var showRegistration by rememberSaveable { mutableStateOf(false) }
+
+                if (showRegistration) {
+                    RegistrationScreen(
+                        onLoginClick = { showRegistration = false }
+                    )
+                } else {
+                    PantallaLogin(
+                        onLoginClick = { email, password ->
+                            // Lógica de inicio de sesión
+                        },
+                        onRegistroClick = {
+                            showRegistration = true
+                        }
+                    )
+                }
             }
         }
     }
