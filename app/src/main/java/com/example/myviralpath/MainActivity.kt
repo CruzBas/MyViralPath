@@ -5,12 +5,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -19,9 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import com.example.myviralpath.ui.RegistrationScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myviralpath.sampledata.supabase
+import com.example.myviralpath.ui.AuthViewModel
+import com.example.myviralpath.ui.screens.RegistrationScreen
 import com.example.myviralpath.ui.screens.PantallaLogin
 import com.example.myviralpath.ui.theme.MyViralPathTheme
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionStatus
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,21 +42,34 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyViralPathTheme {
-                var showRegistration by rememberSaveable { mutableStateOf(false) }
+                val authViewModel: AuthViewModel = viewModel()
+                val sessionStatus by supabase.auth.sessionStatus.collectAsState(initial = SessionStatus.NotAuthenticated())
 
-                if (showRegistration) {
-                    RegistrationScreen(
-                        onLoginClick = { showRegistration = false }
-                    )
-                } else {
-                    PantallaLogin(
-                        onLoginClick = { email, password ->
-                            // Lógica de inicio de sesión
-                        },
-                        onRegistroClick = {
-                            showRegistration = true
+                when (sessionStatus) {
+                            is SessionStatus.Authenticated -> {
+                        MyViralPathApp(authViewModel)
+                    }
+                    else -> {
+                        var showRegistration by rememberSaveable { mutableStateOf(false) }
+
+                        if (showRegistration) {
+                            RegistrationScreen(
+                                viewModel = authViewModel,
+                                onLoginClick = { 
+                                    showRegistration = false 
+                                    authViewModel.resetState()
+                                }
+                            )
+                        } else {
+                            PantallaLogin(
+                                viewModel = authViewModel,
+                                onRegistroClick = { 
+                                    showRegistration = true 
+                                    authViewModel.resetState()
+                                }
+                            )
                         }
-                    )
+                    }
                 }
             }
         }
@@ -52,7 +78,7 @@ class MainActivity : ComponentActivity() {
 
 @PreviewScreenSizes
 @Composable
-fun MyViralPathApp() {
+fun MyViralPathApp(authViewModel: AuthViewModel = viewModel()) {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
     NavigationSuiteScaffold(
@@ -75,7 +101,8 @@ fun MyViralPathApp() {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             Greeting(
                 name = "Android",
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                onSignOut = { authViewModel.signOut() }
             )
         }
     }
@@ -91,11 +118,23 @@ enum class AppDestinations(
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun Greeting(name: String, modifier: Modifier = Modifier, onSignOut: () -> Unit = {}) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Hello $name!",
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onSignOut) {
+                Text("Cerrar sesión")
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)

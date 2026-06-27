@@ -24,15 +24,28 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myviralpath.ui.theme.*//Importacion de los colores de diseño
-import com.example.myviralpath.R //Importacion para acceder al logo
-/**
- * Pantalla de inicio de sesion de ViralPath
- *
- * Estados hoisted para facilitar la integracion con supabase.
- */
+import com.example.myviralpath.ui.AuthState
+import com.example.myviralpath.ui.AuthViewModel
+import com.example.myviralpath.ui.theme.*
+import com.example.myviralpath.R 
+
 @Composable
 fun PantallaLogin(
+    viewModel: AuthViewModel,
+    onRegistroClick: () -> Unit
+) {
+    val authState by viewModel.authState
+    
+    PantallaLoginContent(
+        authState = authState,
+        onLoginClick = { correo, contra -> viewModel.signIn(correo, contra) },
+        onRegistroClick = onRegistroClick
+    )
+}
+
+@Composable
+fun PantallaLoginContent(
+    authState: AuthState,
     onLoginClick: (String, String) -> Unit,
     onRegistroClick: () -> Unit
 ) {
@@ -175,9 +188,23 @@ fun PantallaLogin(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Mostrar errores o mensajes de éxito
+        when (authState) {
+            is AuthState.Error -> {
+                Text(authState.message, color = Color.Red, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            is AuthState.Success -> {
+                Text(authState.message, color = Color.Green, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            else -> {}
+        }
+
         // Boton Principal (Conexion con Supabase)
         Button(
-            onClick = { onLoginClick(correo, contra)},
+            onClick = { onLoginClick(correo, contra) },
+            enabled = authState !is AuthState.Loading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -187,11 +214,15 @@ fun PantallaLogin(
                 contentColor = Color.Black
             )
         ) {
-            Text(
-                text = "Iniciar Sesión",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (authState is AuthState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Black)
+            } else {
+                Text(
+                    text = "Iniciar Sesión",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f)) //Empuja la zona de registro hacia el fondo
@@ -219,7 +250,8 @@ fun PantallaLogin(
 @Composable
 fun PantallaLoginPreview() {
     MyViralPathTheme {
-        PantallaLogin(
+        PantallaLoginContent(
+            authState = AuthState.Idle,
             onLoginClick = { _, _ -> },
             onRegistroClick = { }
         )

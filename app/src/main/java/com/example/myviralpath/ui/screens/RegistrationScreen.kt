@@ -1,4 +1,4 @@
-package com.example.myviralpath.ui
+package com.example.myviralpath.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,14 +19,35 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myviralpath.R
+import com.example.myviralpath.ui.AuthState
+import com.example.myviralpath.ui.AuthViewModel
 import com.example.myviralpath.ui.theme.*
 
 @Composable
-fun RegistrationScreen(onLoginClick: () -> Unit) {
+fun RegistrationScreen(
+    viewModel: AuthViewModel,
+    onLoginClick: () -> Unit
+) {
+    val authState by viewModel.authState
+
+    RegistrationScreenContent(
+        authState = authState,
+        onRegistroClick = { email, password -> viewModel.signUp(email, password) },
+        onLoginClick = onLoginClick
+    )
+}
+
+@Composable
+fun RegistrationScreenContent(
+    authState: AuthState,
+    onRegistroClick: (String, String) -> Unit,
+    onLoginClick: () -> Unit
+) {
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -40,9 +61,7 @@ fun RegistrationScreen(onLoginClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(60.dp))
-        // Logo Placeholder (Matching the shape in the image)
 
-            // Placeholder content for logo: Green top half
             Image(
                 painter = painterResource(id = R.drawable.ic_favorite),
                 contentDescription = "Logo de ViralPath",
@@ -97,8 +116,22 @@ fun RegistrationScreen(onLoginClick: () -> Unit) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+
+        when (authState) {
+            is AuthState.Error -> {
+                Text(authState.message, color = Color.Red, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            is AuthState.Success -> {
+                Text(authState.message, color = Color.Green, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            else -> {}
+        }
+
         Button(
-            onClick = { /* TODO: Registrarse action */ },
+            onClick = { onRegistroClick(email, password) },
+            enabled = authState !is AuthState.Loading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -108,16 +141,20 @@ fun RegistrationScreen(onLoginClick: () -> Unit) {
             ),
             shape = RoundedCornerShape(28.dp)
         ) {
-            Text(
-                text = "Registrarse",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (authState is AuthState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Black)
+            } else {
+                Text(
+                    text = "Registrarse",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Divider
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -231,7 +268,7 @@ fun SocialButton(text: String) {
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
             
             // Just to keep the text centered
@@ -244,6 +281,10 @@ fun SocialButton(text: String) {
 @Composable
 fun RegistrationScreenPreview() {
     MyViralPathTheme {
-        RegistrationScreen(onLoginClick = {})
+        RegistrationScreenContent(
+            authState = AuthState.Idle,
+            onLoginClick = { },
+            onRegistroClick = { _, _ -> }
+        )
     }
 }
