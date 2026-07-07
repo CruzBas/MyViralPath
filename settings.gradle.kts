@@ -1,3 +1,4 @@
+//configuración general del proyecto
 pluginManagement {
     repositories {
         google {

@@ -55,16 +55,16 @@ class MainActivity : ComponentActivity() {
                         if (showRegistration) {
                             RegistrationScreen(
                                 viewModel = authViewModel,
-                                onLoginClick = { 
-                                    showRegistration = false 
+                                onLoginClick = {
+                                    showRegistration = false
                                     authViewModel.resetState()
                                 }
                             )
                         } else {
                             PantallaLogin(
                                 viewModel = authViewModel,
-                                onRegistroClick = { 
-                                    showRegistration = true 
+                                onRegistroClick = {
+                                    showRegistration = true
                                     authViewModel.resetState()
                                 }
                             )
