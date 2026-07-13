@@ -1,5 +1,6 @@
 package com.example.myviralpath.ui.screens
-
+import androidx.compose.runtime.LaunchedEffect
+import com.example.myviralpath.ui.components.LocalSnackbarHostState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,8 +25,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myviralpath.ui.AuthState
-import com.example.myviralpath.ui.AuthViewModel
+import com.example.myviralpath.service.AuthState
+import com.example.myviralpath.service.AuthViewModel
 import com.example.myviralpath.ui.theme.*
 import com.example.myviralpath.R 
 
@@ -55,7 +56,24 @@ fun PantallaLoginContent(
 
     //Estados para ver/ocultar la contraseña
     var contraVisible by remember { mutableStateOf(false) }
+    val snackbarHostState = LocalSnackbarHostState.current
 
+    LaunchedEffect(authState) {
+
+        when(authState){
+
+            is AuthState.Success -> {
+                snackbarHostState.showSnackbar(authState.message)
+            }
+
+            is AuthState.Error -> {
+                snackbarHostState.showSnackbar(authState.message)
+            }
+
+            else -> {}
+        }
+
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -150,7 +168,7 @@ fun PantallaLoginContent(
                 visualTransformation = if (contraVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
-                    //Texto clikeable para Ver/Ocultar contra
+
                     val textoOV = if (contraVisible) "Ocultar" else "Ver"
                     Text(
                         text = textoOV,
@@ -188,20 +206,9 @@ fun PantallaLoginContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Mostrar errores o mensajes de éxito
-        when (authState) {
-            is AuthState.Error -> {
-                Text(authState.message, color = Color.Red, fontSize = 12.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            is AuthState.Success -> {
-                Text(authState.message, color = Color.Green, fontSize = 12.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            else -> {}
-        }
 
-        // Boton Principal (Conexion con Supabase)
+
+        // Boton Principal
         Button(
             onClick = { onLoginClick(correo, contra) },
             enabled = authState !is AuthState.Loading,
@@ -215,7 +222,7 @@ fun PantallaLoginContent(
             )
         ) {
             if (authState is AuthState.Loading) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Black)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Blue)
             } else {
                 Text(
                     text = "Iniciar Sesión",

@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,11 +29,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myviralpath.sampledata.supabase
-import com.example.myviralpath.ui.AuthViewModel
+import com.example.myviralpath.supabase.supabase
+import com.example.myviralpath.service.AuthViewModel
 import com.example.myviralpath.ui.screens.RegistrationScreen
 import com.example.myviralpath.ui.screens.PantallaLogin
 import com.example.myviralpath.ui.theme.MyViralPathTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.CompositionLocalProvider
+import com.example.myviralpath.ui.components.LocalSnackbarHostState
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
 
@@ -44,30 +49,41 @@ class MainActivity : ComponentActivity() {
             MyViralPathTheme {
                 val authViewModel: AuthViewModel = viewModel()
                 val sessionStatus by supabase.auth.sessionStatus.collectAsState(initial = SessionStatus.NotAuthenticated())
+                val snackbarHostState = remember { SnackbarHostState() }
 
-                when (sessionStatus) {
-                            is SessionStatus.Authenticated -> {
-                        MyViralPathApp(authViewModel)
-                    }
-                    else -> {
-                        var showRegistration by rememberSaveable { mutableStateOf(false) }
+                CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        snackbarHost = { SnackbarHost(snackbarHostState) }
+                    ) { innerPadding ->
+                        Box(modifier = Modifier.padding(innerPadding)) {
+                            when (sessionStatus) {
+                                is SessionStatus.Authenticated -> {
+                                    MyViralPathApp(authViewModel)
+                                }
 
-                        if (showRegistration) {
-                            RegistrationScreen(
-                                viewModel = authViewModel,
-                                onLoginClick = {
-                                    showRegistration = false
-                                    authViewModel.resetState()
+                                else -> {
+                                    var showRegistration by rememberSaveable { mutableStateOf(false) }
+
+                                    if (showRegistration) {
+                                        RegistrationScreen(
+                                            viewModel = authViewModel,
+                                            onLoginClick = {
+                                                showRegistration = false
+                                                authViewModel.resetState()
+                                            }
+                                        )
+                                    } else {
+                                        PantallaLogin(
+                                            viewModel = authViewModel,
+                                            onRegistroClick = {
+                                                showRegistration = true
+                                                authViewModel.resetState()
+                                            }
+                                        )
+                                    }
                                 }
-                            )
-                        } else {
-                            PantallaLogin(
-                                viewModel = authViewModel,
-                                onRegistroClick = {
-                                    showRegistration = true
-                                    authViewModel.resetState()
-                                }
-                            )
+                            }
                         }
                     }
                 }
