@@ -1,8 +1,7 @@
-package com.example.myviralpath.sampledata
+package com.example.myviralpath.supabase
 
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.auth.Auth
-import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.Postgrest
 
 // Es recomendable usar una sola instancia del cliente en toda la app

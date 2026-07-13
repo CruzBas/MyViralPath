@@ -1,13 +1,14 @@
-package com.example.myviralpath.ui
+package com.example.myviralpath.service
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myviralpath.sampledata.supabase
+import com.example.myviralpath.supabase.supabase
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.launch
+import android.widget.Toast
 
 sealed class AuthState {
     object Idle : AuthState()
@@ -24,14 +25,19 @@ class AuthViewModel : ViewModel() {
     fun signUp(email: String, pass: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
+
             try {
                 supabase.auth.signUpWith(Email) {
                     this.email = email
                     this.password = pass
                 }
-                _authState.value = AuthState.Success("Registro exitoso. Revisa tu correo.")
+
+                _authState.value =
+                    AuthState.Success("Registro exitoso. Revisa tu correo.")
+
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.localizedMessage ?: "Error al registrarse")
+                _authState.value =
+                    AuthState.Error(e.localizedMessage ?: "Error al registrarse")
             }
         }
     }
@@ -40,17 +46,24 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
-               supabase.auth.signInWith(Email) {
+                supabase.auth.signInWith(Email) {
                     this.email = email
                     this.password = pass
                 }
-                _authState.value = AuthState.Success("Sesión iniciada correctamente")
+                _authState.value = AuthState.Success("¡Bienvenido de nuevo!")
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.localizedMessage ?: "Error al iniciar sesión")
+                // Aquí personalizamos el mensaje
+                val notice = when {
+                    e.message?.contains("invalid", ignoreCase = true) == true ->
+                        "Correo o contraseña incorrectos. Inténtalo de nuevo."
+                    e.message?.contains("network", ignoreCase = true) == true ->
+                        "Parece que no tienes conexión a internet."
+                    else -> "Hubo un problema al iniciar sesión. Inténtalo más tarde."
+                }
+                _authState.value = AuthState.Error(notice)
             }
         }
     }
-    
     fun signOut() {
         viewModelScope.launch {
             try {
