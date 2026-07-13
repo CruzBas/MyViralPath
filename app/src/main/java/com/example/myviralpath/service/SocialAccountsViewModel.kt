@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import io.github.jan.supabase.auth.status.SessionStatus
 
 class SocialAccountsViewModel : ViewModel() {
     private val _isInstagramLinked = MutableStateFlow(false)
@@ -19,42 +18,55 @@ class SocialAccountsViewModel : ViewModel() {
     private val _isYoutubeLinked = MutableStateFlow(false)
     val isYoutubeLinked: StateFlow<Boolean> = _isYoutubeLinked.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     init {
-        // Observamos el estado de la sesión para actualizar las vinculaciones reales
+        updateLinkedAccounts()
+    }
+
+    fun updateLinkedAccounts() {
         viewModelScope.launch {
-            supabase.auth.sessionStatus.collect { status ->
-                if (status is SessionStatus.Authenticated) {
-                    val user = supabase.auth.currentUserOrNull()
-                    val identities = user?.identities ?: emptyList()
-                    
+            try {
+
+                val user = supabase.auth.retrieveUserForCurrentSession()
+                val identities = user.identities
+                
+                if (identities != null) {
                     _isYoutubeLinked.value = identities.any { it.provider == "google" }
-                    // Usualmente Instagram se enlaza a través de Facebook Login o el provider "instagram"
                     _isInstagramLinked.value = identities.any { it.provider == "facebook" || it.provider == "instagram" }
-                } else {
-                    _isYoutubeLinked.value = false
-                    _isInstagramLinked.value = false
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
     fun linkInstagram() {
-        viewModelScope.launch {
-            try {
-                // Iniciamos flujo OAuth de Supabase para vincular identidad
-                supabase.auth.linkIdentity(provider = Facebook, redirectUrl = "myviralpath://login-callback")
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        executeLink {
+            // Quitamos el redirectUrl manual para que use el Site URL de Supabase
+            supabase.auth.linkIdentity(provider = Facebook)
         }
     }
 
     fun linkYoutube() {
+        executeLink {
+            // Quitamos el redirectUrl manual para que use el Site URL de Supabase
+            supabase.auth.linkIdentity(provider = Google)
+        }
+    }
+
+    private fun executeLink(block: suspend () -> Unit) {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
-                supabase.auth.linkIdentity(provider = Google, redirectUrl = "myviralpath://login-callback")
+                block()
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                _isLoading.value = false
             }
         }
     }

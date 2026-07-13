@@ -1,5 +1,6 @@
 package com.example.myviralpath
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
@@ -52,6 +52,7 @@ import com.example.myviralpath.ui.theme.NaranjaPrimario
 import com.example.myviralpath.ui.theme.TextoPrimario
 import com.example.myviralpath.ui.theme.TextoSecundario
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.handleDeeplinks
 import io.github.jan.supabase.auth.status.SessionStatus
 
 import androidx.compose.material.icons.Icons
@@ -60,15 +61,22 @@ import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
+    
+    private lateinit var socialViewModel: SocialAccountsViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        socialViewModel = ViewModelProvider(this)[SocialAccountsViewModel::class.java]
+        
+        handleIntent(intent)
         enableEdgeToEdge()
+        
         setContent {
             MyViralPathTheme {
                 val authViewModel: AuthViewModel = viewModel()
-                val socialAccountsViewModel: SocialAccountsViewModel = viewModel()
                 val sessionStatus by supabase.auth.sessionStatus.collectAsState(initial = SessionStatus.NotAuthenticated())
                 val snackbarHostState = remember { SnackbarHostState() }
 
@@ -111,15 +119,17 @@ class MainActivity : ComponentActivity() {
                                         ) {
                                             when (currentDestination) {
                                                 AppDestinations.DASHBOARD -> {
-                                                    val isInstagramLinked by socialAccountsViewModel.isInstagramLinked.collectAsState()
-                                                    val isYoutubeLinked by socialAccountsViewModel.isYoutubeLinked.collectAsState()
+                                                    val isInstagramLinked by socialViewModel.isInstagramLinked.collectAsState()
+                                                    val isYoutubeLinked by socialViewModel.isYoutubeLinked.collectAsState()
+                                                    val isLoading by socialViewModel.isLoading.collectAsState()
                                                     
                                                     if (isInstagramLinked || isYoutubeLinked) {
                                                         DashboardEstrategico()
                                                     } else {
                                                         VinculacionCuentasScreen(
-                                                            onLinkInstagram = { socialAccountsViewModel.linkInstagram() },
-                                                            onLinkYoutube = { socialAccountsViewModel.linkYoutube() }
+                                                            isLoading = isLoading,
+                                                            onLinkInstagram = { socialViewModel.linkInstagram() },
+                                                            onLinkYoutube = { socialViewModel.linkYoutube() }
                                                         )
                                                     }
                                                 }
@@ -160,6 +170,18 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        supabase.handleDeeplinks(
+            intent = intent,
+            onSessionSuccess = { socialViewModel.updateLinkedAccounts() }
+        )
     }
 }
 

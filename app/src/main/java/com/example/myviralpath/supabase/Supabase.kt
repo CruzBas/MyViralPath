@@ -13,8 +13,10 @@ val supabase = createSupabaseClient(
 ) {
     install(Postgrest)
     install(Auth) {
-        // Configuraciones opcionales como auto-guardado de sesión
+
         autoLoadFromStorage = true
+        scheme = "myviralpath"
+        host = "login-callback"
     }
     install(ComposeAuth)
 }
