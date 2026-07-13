@@ -1,18 +1,20 @@
 package com.example.myviralpath.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,38 +30,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myviralpath.ui.theme.MyViralPathTheme
-
-private val FondoPrincipal = Color(0xFF06182A)
-private val FondoSuperior = Color(0xFF071526)
-private val FondoTarjeta = Color(0xFF102238)
-private val FondoTarjetaClaro = Color(0xFF182A40)
-private val BordeTarjeta = Color(0xFF1C324A)
-private val Naranja = Color(0xFFFF7415)
-private val Durazno = Color(0xFFFFAE87)
-private val Verde = Color(0xFF42E47A)
-private val AzulClaro = Color(0xFF8CCEFF)
-private val TextoPrincipal = Color(0xFFD6E2F5)
-private val TextoSecundario = Color(0xFFE0C2B8)
-private val FondoChip = Color(0xFF1B2D41)
+import com.example.myviralpath.R
+import com.example.myviralpath.ui.theme.*
 
 @Composable
 fun TendenciasPantalla() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(FondoPrincipal)
+            .background(BackgroundOscuro)
     ) {
         Column(
             modifier = Modifier
@@ -70,13 +62,13 @@ fun TendenciasPantalla() {
             Encabezado()
 
             Column(
-                modifier = Modifier.padding(horizontal = 20.dp)
+                modifier = Modifier.padding(horizontal = 24.dp)
             ) {
                 Text(
                     text = "Tendencias",
-                    color = TextoPrincipal,
-                    fontSize = 25.sp,
-                    fontWeight = FontWeight.SemiBold
+                    color = TextoPrimario,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -87,17 +79,17 @@ fun TendenciasPantalla() {
                     fontSize = 14.sp
                 )
 
-                Spacer(modifier = Modifier.height(22.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 FiltrosPlataformas()
 
-                Spacer(modifier = Modifier.height(64.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 TarjetaTendencia(
                     estado = "EXPLOTANDO",
                     porcentaje = "94%",
                     titulo = "HIIT Challenge",
-                    colorEstado = Verde,
+                    colorEstado = Color(0xFF42E47A),
                     tipoGrafica = TipoGrafica.LINEA
                 )
 
@@ -107,7 +99,7 @@ fun TendenciasPantalla() {
                     estado = "ESTABLE",
                     porcentaje = "82%",
                     titulo = "Meal Prep Hacks",
-                    colorEstado = AzulClaro,
+                    colorEstado = Color(0xFF8CCEFF),
                     tipoGrafica = TipoGrafica.DISCONTINUA
                 )
 
@@ -117,57 +109,55 @@ fun TendenciasPantalla() {
                     estado = "EN ASCENSO",
                     porcentaje = "76%",
                     titulo = "Minimalist Gym Wear",
-                    colorEstado = Verde,
+                    colorEstado = Color(0xFF42E47A),
                     tipoGrafica = TipoGrafica.BARRAS
                 )
 
-                Spacer(modifier = Modifier.height(72.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
                 TituloSeccion(
                     icono = "↗",
-                    titulo = "Análisis de Tendencia"
+                    titulo = "ANÁLISIS DE TENDENCIA"
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 TarjetaAnalisis()
 
-                Spacer(modifier = Modifier.height(52.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
                 Text(
                     text = "Audios Tendencia",
-                    color = TextoPrincipal,
-                    fontSize = 13.sp
+                    color = TextoSecundario,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 AudioTendencia(
-                    titulo = "Rising Phonk\n(Viral Edit)",
+                    titulo = "Rising Phonk (Viral Edit)",
                     uso = "Used in 1.2M videos"
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
 
                 AudioTendencia(
-                    titulo = "Gym Motivation\n2024",
-                    uso = "Used in 840K\nvideos"
+                    titulo = "Gym Motivation 2024",
+                    uso = "Used in 840K videos"
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
 
                 AudioTendencia(
-                    titulo = "Chill Lofi Meal\nPrep",
-                    uso = "Used in 450K\nvideos"
+                    titulo = "Chill Lofi Meal Prep",
+                    uso = "Used in 450K videos"
                 )
 
                 Spacer(modifier = Modifier.height(40.dp))
             }
         }
-
-        BarraInferior(
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
 }
 
@@ -176,49 +166,36 @@ private fun Encabezado() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FondoSuperior)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(Color(0xFF20334A), CircleShape)
-                .border(1.dp, Naranja, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "VP",
-                color = Durazno,
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp
-            )
-        }
 
-        Spacer(modifier = Modifier.width(10.dp))
+
+        Spacer(modifier = Modifier.width(12.dp))
 
         Text(
             text = "ViralPath",
-            color = Durazno,
-            fontSize = 23.sp,
+            color = TextoPrimario,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Text(
-            text = "◉",
-            color = AzulClaro,
-            fontSize = 16.sp
-        )
-
-        Spacer(modifier = Modifier.width(22.dp))
-
-        IconButton(onClick = { }) {
-            Text(
-                text = "♧",
-                color = Durazno,
-                fontSize = 24.sp
+        IconButton(
+            onClick = { },
+            modifier = Modifier
+                .size(40.dp)
+                .background(BackgroundTxt, CircleShape)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_account_box),
+                contentDescription = "Perfil",
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(BackgroundTxt)
+                    .padding(8.dp)
             )
         }
     }
@@ -231,17 +208,17 @@ private fun FiltrosPlataformas() {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         ChipPlataforma(
-            texto = "▣  Instagram",
+            texto = "Instagram",
             seleccionado = true
         )
 
         ChipPlataforma(
-            texto = "▰  TikTok",
+            texto = "TikTok",
             seleccionado = false
         )
 
         ChipPlataforma(
-            texto = "▣  YouTube",
+            texto = "YouTube",
             seleccionado = false
         )
     }
@@ -255,16 +232,21 @@ private fun ChipPlataforma(
     Box(
         modifier = Modifier
             .background(
-                color = if (seleccionado) Naranja else FondoChip,
-                shape = RoundedCornerShape(22.dp)
+                color = if (seleccionado) NaranjaPrimario else BackgroundTxt,
+                shape = RoundedCornerShape(20.dp)
             )
-            .padding(horizontal = 20.dp, vertical = 11.dp)
+            .border(
+                width = 1.dp,
+                color = if (seleccionado) Color.Transparent else BordeTxt,
+                shape = RoundedCornerShape(20.dp)
+            )
+            .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Text(
             text = texto,
-            color = if (seleccionado) Color(0xFF3A1C0D) else TextoSecundario,
+            color = if (seleccionado) Color.White else TextoSecundario,
             fontSize = 12.sp,
-            fontWeight = if (seleccionado) FontWeight.Medium else FontWeight.Normal
+            fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal
         )
     }
 }
@@ -286,35 +268,34 @@ private fun TarjetaTendencia(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(298.dp)
             .background(
-                color = FondoTarjeta,
-                shape = RoundedCornerShape(28.dp)
+                color = BackgroundTxt,
+                shape = RoundedCornerShape(24.dp)
             )
             .border(
                 width = 1.dp,
-                color = BordeTarjeta,
-                shape = RoundedCornerShape(28.dp)
+                color = BordeTxt,
+                shape = RoundedCornerShape(24.dp)
             )
-            .padding(28.dp)
+            .padding(24.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .background(
-                        color = colorEstado.copy(alpha = 0.12f),
-                        shape = RoundedCornerShape(10.dp)
+                        color = colorEstado.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(8.dp)
                     )
-                    .padding(horizontal = 12.dp, vertical = 5.dp)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
                     text = estado,
                     color = colorEstado,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -322,25 +303,20 @@ private fun TarjetaTendencia(
 
             Text(
                 text = porcentaje,
-                color = when (porcentaje) {
-                    "94%" -> Durazno
-                    "76%" -> Verde
-                    else -> TextoPrincipal
-                },
-                fontSize = 36.sp,
+                color = TextoPrimario,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = titulo,
-            color = TextoPrincipal,
-            fontSize = 14.sp
+            color = TextoPrimario,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(14.dp))
 
         Text(
             text = "Viral Potential Index",
@@ -348,12 +324,14 @@ private fun TarjetaTendencia(
             fontSize = 12.sp
         )
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        when (tipoGrafica) {
-            TipoGrafica.LINEA -> GraficaLinea()
-            TipoGrafica.DISCONTINUA -> GraficaDiscontinua()
-            TipoGrafica.BARRAS -> GraficaBarras()
+        Box(modifier = Modifier.height(80.dp)) {
+            when (tipoGrafica) {
+                TipoGrafica.LINEA -> GraficaLinea()
+                TipoGrafica.DISCONTINUA -> GraficaDiscontinua()
+                TipoGrafica.BARRAS -> GraficaBarras()
+            }
         }
     }
 }
@@ -363,40 +341,24 @@ private fun GraficaLinea() {
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .height(92.dp)
+            .fillMaxHeight()
     ) {
         val path = Path().apply {
-            moveTo(size.width * 0.08f, size.height * 0.82f)
+            moveTo(0f, size.height * 0.8f)
             cubicTo(
-                size.width * 0.30f,
-                size.height * 0.68f,
-                size.width * 0.42f,
-                size.height * 0.43f,
-                size.width * 0.62f,
-                size.height * 0.18f
+                size.width * 0.3f, size.height * 0.7f,
+                size.width * 0.6f, size.height * 0.2f,
+                size.width, size.height * 0.1f
             )
         }
 
         drawPath(
             path = path,
-            color = Durazno,
+            color = NaranjaPrimario,
             style = Stroke(
-                width = 6.dp.toPx(),
-                cap = StrokeCap.Square
+                width = 3.dp.toPx(),
+                cap = StrokeCap.Round
             )
-        )
-
-        val sombra = Path().apply {
-            moveTo(size.width * 0.62f, size.height * 0.18f)
-            lineTo(size.width * 0.90f, size.height * 0.18f)
-            lineTo(size.width * 0.90f, size.height * 0.90f)
-            lineTo(size.width * 0.62f, size.height * 0.90f)
-            close()
-        }
-
-        drawPath(
-            path = sombra,
-            color = Durazno.copy(alpha = 0.12f)
         )
     }
 }
@@ -406,20 +368,22 @@ private fun GraficaDiscontinua() {
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .height(92.dp)
+            .fillMaxHeight()
     ) {
         drawLine(
-            color = AzulClaro,
-            start = Offset(size.width * 0.12f, size.height * 0.65f),
-            end = Offset(size.width * 0.34f, size.height * 0.61f),
-            strokeWidth = 6.dp.toPx()
+            color = Color(0xFF8CCEFF),
+            start = Offset(0f, size.height * 0.6f),
+            end = Offset(size.width * 0.4f, size.height * 0.5f),
+            strokeWidth = 3.dp.toPx(),
+            cap = StrokeCap.Round
         )
 
         drawLine(
-            color = AzulClaro,
-            start = Offset(size.width * 0.56f, size.height * 0.69f),
-            end = Offset(size.width * 0.78f, size.height * 0.74f),
-            strokeWidth = 6.dp.toPx()
+            color = Color(0xFF8CCEFF),
+            start = Offset(size.width * 0.6f, size.height * 0.4f),
+            end = Offset(size.width, size.height * 0.3f),
+            strokeWidth = 3.dp.toPx(),
+            cap = StrokeCap.Round
         )
     }
 }
@@ -429,23 +393,18 @@ private fun GraficaBarras() {
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .fillMaxHeight()
     ) {
-        val ancho = size.width / 6.5f
-        val espacio = 6.dp.toPx()
-        val alturas = listOf(0.28f, 0.42f, 0.56f, 0.70f, 0.86f)
+        val count = 6
+        val spacing = 8.dp.toPx()
+        val itemWidth = (size.width - (spacing * (count - 1))) / count
+        val heights = listOf(0.3f, 0.5f, 0.4f, 0.7f, 0.6f, 0.9f)
 
-        alturas.forEachIndexed { index, altura ->
+        heights.forEachIndexed { index, h ->
             drawRect(
-                color = Verde.copy(alpha = 0.22f + index * 0.15f),
-                topLeft = Offset(
-                    x = index * (ancho + espacio),
-                    y = size.height * (1f - altura)
-                ),
-                size = Size(
-                    width = ancho,
-                    height = size.height * altura
-                )
+                color = Color(0xFF42E47A).copy(alpha = 0.3f + (h * 0.7f)),
+                topLeft = Offset(index * (itemWidth + spacing), size.height * (1f - h)),
+                size = Size(itemWidth, size.height * h)
             )
         }
     }
@@ -460,18 +419,11 @@ private fun TituloSeccion(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = icono,
-            color = Durazno,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Text(
             text = titulo,
-            color = TextoPrincipal,
-            fontSize = 14.sp
+            color = TextoSecundario,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
         )
     }
 }
@@ -482,49 +434,49 @@ private fun TarjetaAnalisis() {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = FondoTarjeta,
-                shape = RoundedCornerShape(28.dp)
+                color = BackgroundTxt,
+                shape = RoundedCornerShape(24.dp)
             )
             .border(
                 1.dp,
-                BordeTarjeta,
-                RoundedCornerShape(28.dp)
+                BordeTxt,
+                RoundedCornerShape(24.dp)
             )
     ) {
         Column(
-            modifier = Modifier.padding(28.dp)
+            modifier = Modifier.padding(24.dp)
         ) {
             FilaAnalisis(
                 icono = "↪",
                 titulo = "El gancho",
-                descripcion = "Primeros 3 segundos con\ncorte rápido para maximizar\nretención.",
-                colorIcono = Durazno
+                descripcion = "Primeros 3 segundos con corte rápido para maximizar retención.",
+                colorIcono = NaranjaPrimario
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             FilaAnalisis(
                 icono = "▮",
                 titulo = "Audio: 'Rising Phonk'",
-                descripcion = "Trending +450% en las\núltimas 24 horas.",
-                colorIcono = Verde
+                descripcion = "Trending +450% en las últimas 24 horas.",
+                colorIcono = Color(0xFF42E47A)
             )
 
-            Spacer(modifier = Modifier.height(26.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = { },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(28.dp),
+                    .height(50.dp),
+                shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Durazno,
-                    contentColor = Color(0xFF572715)
+                    containerColor = NaranjaPrimario
                 )
             ) {
                 Text(
                     text = "Aplicar Estrategia Sugerida",
+                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -533,35 +485,35 @@ private fun TarjetaAnalisis() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(FondoTarjetaClaro)
-                .padding(28.dp)
+                .background(BordeTxt.copy(alpha = 0.3f))
+                .padding(24.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = FondoTarjeta.copy(alpha = 0.45f),
-                        shape = RoundedCornerShape(28.dp)
+                        color = BackgroundTxt.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(24.dp)
                     )
                     .border(
                         1.dp,
-                        BordeTarjeta,
-                        RoundedCornerShape(28.dp)
+                        BordeTxt,
+                        RoundedCornerShape(24.dp)
                     )
-                    .padding(horizontal = 24.dp, vertical = 34.dp),
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "✦",
-                    color = Durazno,
+                    color = NaranjaPrimario,
                     fontSize = 42.sp
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "IA ha detectado una anomalía de\ncrecimiento en audios similares\nde HIIT.",
-                    color = TextoPrincipal,
+                    text = "IA ha detectado una anomalía de crecimiento en audios similares de HIIT.",
+                    color = TextoPrimario,
                     fontSize = 14.sp,
                     lineHeight = 21.sp,
                     textAlign = TextAlign.Center
@@ -583,9 +535,9 @@ private fun FilaAnalisis(
     ) {
         Box(
             modifier = Modifier
-                .size(38.dp)
+                .size(32.dp)
                 .background(
-                    colorIcono.copy(alpha = 0.12f),
+                    colorIcono.copy(alpha = 0.1f),
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -593,28 +545,26 @@ private fun FilaAnalisis(
             Text(
                 text = icono,
                 color = colorIcono,
-                fontSize = 19.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
         Column {
             Text(
                 text = titulo,
-                color = TextoPrincipal,
+                color = TextoPrimario,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
-
             Text(
                 text = descripcion,
                 color = TextoSecundario,
-                fontSize = 14.sp,
-                lineHeight = 21.sp
+                fontSize = 13.sp,
+                lineHeight = 18.sp
             )
         }
     }
@@ -629,118 +579,63 @@ private fun AudioTendencia(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = FondoTarjeta,
-                shape = RoundedCornerShape(28.dp)
+                color = BackgroundTxt,
+                shape = RoundedCornerShape(16.dp)
             )
             .border(
                 1.dp,
-                BordeTarjeta,
-                RoundedCornerShape(28.dp)
+                BordeTxt,
+                RoundedCornerShape(16.dp)
             )
-            .padding(14.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(42.dp)
-                .background(Color(0xFF243A51), CircleShape),
+                .size(40.dp)
+                .background(BordeTxt, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "▷",
-                color = TextoPrincipal,
-                fontSize = 20.sp
+                color = TextoPrimario,
+                fontSize = 18.sp
             )
         }
 
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
         Column(
             modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = titulo,
-                color = TextoPrincipal,
+                color = TextoPrimario,
                 fontSize = 14.sp,
-                lineHeight = 18.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
                 text = uso,
                 color = TextoSecundario,
-                fontSize = 11.sp,
-                lineHeight = 14.sp
+                fontSize = 12.sp
             )
         }
 
         Button(
             onClick = { },
-            shape = RoundedCornerShape(28.dp),
+            shape = RoundedCornerShape(20.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Naranja,
-                contentColor = Color(0xFF43200D)
+                containerColor = NaranjaPrimario
             )
         ) {
             Text(
-                text = "Usar en\nEstrategia",
-                textAlign = TextAlign.Center,
-                fontSize = 13.sp,
+                text = "Usar",
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-@Composable
-private fun BarraInferior(
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(FondoTarjeta)
-            .navigationBarsPadding()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        ItemNavegacion("▦", "Dashboard", false)
-        ItemNavegacion("↗", "Tendencias", true)
-        ItemNavegacion("▤", "Plan", false)
-        ItemNavegacion("♙", "Perfil", false)
-    }
-}
-
-@Composable
-private fun ItemNavegacion(
-    icono: String,
-    texto: String,
-    seleccionado: Boolean
-) {
-    Column(
-        modifier = Modifier
-            .background(
-                color = if (seleccionado) Naranja else Color.Transparent,
-                shape = RoundedCornerShape(24.dp)
-            )
-            .padding(
-                horizontal = if (seleccionado) 18.dp else 8.dp,
-                vertical = 6.dp
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = icono,
-            color = if (seleccionado) Color(0xFF3A1C0D) else TextoSecundario,
-            fontSize = 18.sp
-        )
-
-        Text(
-            text = texto,
-            color = if (seleccionado) Color(0xFF3A1C0D) else TextoPrincipal,
-            fontSize = 10.sp
-        )
     }
 }
 

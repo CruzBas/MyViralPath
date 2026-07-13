@@ -256,12 +256,15 @@ fun PantallaLoginContent(
 @Preview(showBackground = true)
 @Composable
 fun PantallaLoginPreview() {
+    val snackbarHostState = remember { SnackbarHostState() }
     MyViralPathTheme {
-        PantallaLoginContent(
-            authState = AuthState.Idle,
-            onLoginClick = { _, _ -> },
-            onRegistroClick = { }
-        )
+        CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
+            PantallaLoginContent(
+                authState = AuthState.Idle,
+                onLoginClick = { _, _ -> },
+                onRegistroClick = { }
+            )
+        }
     }
 }
 

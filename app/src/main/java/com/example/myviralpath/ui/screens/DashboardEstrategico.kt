@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,9 +23,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myviralpath.R
 import com.example.myviralpath.ui.theme.*
+import com.example.myviralpath.ui.components.LocalSnackbarHostState
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 @Composable
 fun DashboardEstrategico() {
+    val snackbarHostState = LocalSnackbarHostState.current
+    val scope = rememberCoroutineScope()
+
     // LazyColumn para que se pueda scrollear
     LazyColumn(
         modifier = Modifier
@@ -36,7 +44,13 @@ fun DashboardEstrategico() {
         item { Spacer(modifier = Modifier.height(24.dp)) }
         item { Estado() }
         item { Spacer(modifier = Modifier.height(32.dp)) }
-        item { TarjetaPlanEstrategico() }
+        item { TarjetaPlanEstrategico(
+            onVerDetallesClick = {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Optimizar estrategia")
+                }
+            }
+        ) }
         item { Spacer(modifier = Modifier.height(30.dp)) }
         item { SeccionTitulo("Metricas Estrategicas") }
         item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -113,7 +127,7 @@ fun Estado() {
 }
 
 @Composable
-fun TarjetaPlanEstrategico() {
+fun TarjetaPlanEstrategico(onVerDetallesClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -138,7 +152,7 @@ fun TarjetaPlanEstrategico() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { /* Acción al hacer clic en el botón */ },
+            onClick = onVerDetallesClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -317,7 +331,10 @@ fun ProximosPasos() {
 @Preview(showBackground = true)
 @Composable
 fun DashboardEstrategicoPreview() {
+    val snackbarHostState = remember { SnackbarHostState() }
     MyViralPathTheme {
-        DashboardEstrategico()
+        CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
+            DashboardEstrategico()
+        }
     }
 }
