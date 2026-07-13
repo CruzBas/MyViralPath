@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.sp
 import com.example.myviralpath.ui.theme.MyViralPathTheme
 import androidx.compose.ui.graphics.Color
 
-// Pantalla de Onboarding - Paso 1 de 3: selección de nicho y plataformas
-// Solo UI, sin lógica ni ViewModel (los datos "seleccionados" están fijos por ahora)
+// Pantalla de Onboarding - Paso 1
+// Solo UI
 
 @Composable
 fun OnboardingNichoPantalla() {
@@ -176,7 +176,7 @@ private fun NicheGrid() {
         "🎬" to "Entretenimiento",
         "•••" to "Otro"
     )
-    val nichoSeleccionado = "Fitness" // dato fijo de ejemplo, sin lógica real
+    val nichoSeleccionado = "Fitness" // dato fijo de ejemplo
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         nichos.chunked(2).forEach { filaDeNichos ->
@@ -245,7 +245,7 @@ private fun PlatformsFlowRow() {
     }
 }
 
-// Chip individual de plataforma (forma de píldora)
+// Chip individual de plataforma
 @Composable
 private fun PlatformChip(label: String, selected: Boolean) {
     Box(
@@ -289,7 +289,7 @@ private fun ContinuarBoton() {
     }
 }
 
-// Vista previa de la pantalla dentro del tema de la app
+// Vista previa de la pantalla
 @Preview(showBackground = true)
 @Composable
 fun Pantalla1Preview() {
