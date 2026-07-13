@@ -50,6 +50,7 @@ dependencies {
     implementation(platform("io.github.jan-tennert.supabase:bom:3.6.0"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.github.jan-tennert.supabase:auth-kt")
+    implementation("io.github.jan-tennert.supabase:compose-auth")
     implementation("io.ktor:ktor-client-okhttp:3.1.3")
     implementation("androidx.compose.material:material-icons-extended")
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -1,5 +1,7 @@
 package com.example.myviralpath.supabase
 
+import io.github.jan.supabase.compose.auth.ComposeAuth
+import io.github.jan.supabase.compose.auth.composeAuth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.postgrest.Postgrest
@@ -14,4 +16,5 @@ val supabase = createSupabaseClient(
         // Configuraciones opcionales como auto-guardado de sesión
         autoLoadFromStorage = true
     }
+    install(ComposeAuth)
 }

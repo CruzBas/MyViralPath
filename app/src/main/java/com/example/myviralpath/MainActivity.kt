@@ -35,10 +35,12 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myviralpath.supabase.supabase
 import com.example.myviralpath.service.AuthViewModel
+import com.example.myviralpath.service.SocialAccountsViewModel
 import com.example.myviralpath.ui.screens.DashboardEstrategico
 import com.example.myviralpath.ui.screens.RegistrationScreen
 import com.example.myviralpath.ui.screens.PantallaLogin
 import com.example.myviralpath.ui.screens.TendenciasPantalla
+import com.example.myviralpath.ui.screens.VinculacionCuentasScreen
 import com.example.myviralpath.ui.theme.MyViralPathTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -66,6 +68,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyViralPathTheme {
                 val authViewModel: AuthViewModel = viewModel()
+                val socialAccountsViewModel: SocialAccountsViewModel = viewModel()
                 val sessionStatus by supabase.auth.sessionStatus.collectAsState(initial = SessionStatus.NotAuthenticated())
                 val snackbarHostState = remember { SnackbarHostState() }
 
@@ -107,7 +110,19 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.fillMaxSize()
                                         ) {
                                             when (currentDestination) {
-                                                AppDestinations.DASHBOARD -> DashboardEstrategico()
+                                                AppDestinations.DASHBOARD -> {
+                                                    val isInstagramLinked by socialAccountsViewModel.isInstagramLinked.collectAsState()
+                                                    val isYoutubeLinked by socialAccountsViewModel.isYoutubeLinked.collectAsState()
+                                                    
+                                                    if (isInstagramLinked || isYoutubeLinked) {
+                                                        DashboardEstrategico()
+                                                    } else {
+                                                        VinculacionCuentasScreen(
+                                                            onLinkInstagram = { socialAccountsViewModel.linkInstagram() },
+                                                            onLinkYoutube = { socialAccountsViewModel.linkYoutube() }
+                                                        )
+                                                    }
+                                                }
                                                 AppDestinations.TENDENCIAS -> TendenciasPantalla()
                                                 else -> Greeting(
                                                     name = currentDestination.label,

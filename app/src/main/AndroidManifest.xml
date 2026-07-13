@@ -21,6 +21,16 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Intent filter for Supabase OAuth Deep Links -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- The URI will be myviralpath://login-callback -->
+                <data
+                    android:scheme="myviralpath"
+                    android:host="login-callback" />
+            </intent-filter>
         </activity>
     </application>
 
