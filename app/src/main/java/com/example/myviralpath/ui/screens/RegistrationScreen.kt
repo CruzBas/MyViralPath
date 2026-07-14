@@ -284,7 +284,7 @@ fun RegistrationScreenPreview() {
         RegistrationScreenContent(
             authState = AuthState.Idle,
             onLoginClick = { },
-            onRegistroClick = { _, _ -> }
+            onRegistroClick = { _, _, _ -> }
         )
     }
 }

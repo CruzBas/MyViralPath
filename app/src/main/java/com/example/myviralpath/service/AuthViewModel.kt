@@ -34,7 +34,8 @@ class AuthViewModel : ViewModel() {
     fun checkOnboardingStatus() {
         viewModelScope.launch {
             try {
-                val userId = supabase.auth.currentUserOrNull()?.id ?: return@launch
+                val user = supabase.auth.currentUserOrNull() ?: return@launch
+                val userId = user.id
                 val response = supabase.postgrest.from("profiles").select {
                     filter {
                         eq("id", userId)
@@ -46,6 +47,15 @@ class AuthViewModel : ViewModel() {
                     val completed = profileObj["onboarding_completed"]?.jsonPrimitive?.booleanOrNull ?: false
                     _onboardingCompleted.value = completed
                 } else {
+                    
+                    val fullName = user.userMetadata?.get("full_name")?.jsonPrimitive?.content ?: ""
+                    supabase.postgrest.from("profiles").insert(
+                        buildJsonObject {
+                            put("id", userId)
+                            put("full_name", fullName)
+                            put("onboarding_completed", false)
+                        }
+                    )
                     _onboardingCompleted.value = false
                 }
             } catch (e: Exception) {

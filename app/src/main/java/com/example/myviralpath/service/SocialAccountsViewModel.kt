@@ -21,9 +21,8 @@ class SocialAccountsViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    init {
-        updateLinkedAccounts()
-    }
+
+
 
     fun updateLinkedAccounts() {
         viewModelScope.launch {
@@ -46,15 +45,19 @@ class SocialAccountsViewModel : ViewModel() {
 
     fun linkInstagram() {
         executeLink {
-            // Quitamos el redirectUrl manual para que use el Site URL de Supabase
-            supabase.auth.linkIdentity(provider = Facebook)
+            supabase.auth.linkIdentity(
+                provider = Facebook,
+                redirectUrl = "myviralpath://login-callback"
+            )
         }
     }
 
     fun linkYoutube() {
         executeLink {
-            // Quitamos el redirectUrl manual para que use el Site URL de Supabase
-            supabase.auth.linkIdentity(provider = Google)
+            supabase.auth.linkIdentity(
+                provider = Google,
+                redirectUrl = "myviralpath://login-callback"
+            )
         }
     }
 

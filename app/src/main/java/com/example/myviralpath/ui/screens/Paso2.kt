@@ -30,7 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
-import com.example.myviralpath.ui.theme.MyViralPathTheme
+import com.example.myviralpath.ui.theme.*
 
 // Pantalla de Onboarding Paso audiencia ideal
 
@@ -43,13 +43,12 @@ fun AudienciaPantalla(
     var ageRange by remember { mutableStateOf(18f..35f) }
     var selectedGender by remember { mutableStateOf("MIXTO") }
 
-    // Contenedor principal: apila todo verticalmente y permite scroll
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(BackgroundOscuro)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -63,23 +62,21 @@ fun AudienciaPantalla(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Título de la pantalla
         Text(
             text = "Ahora, hablemos de tu audiencia ideal",
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 30.sp
+            color = TextoPrimario,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            lineHeight = 34.sp
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Subtítulo descriptivo
         Text(
             text = "ViralPath detectará tendencias basadas en este perfil para optimizar tu alcance.",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 14.sp,
-            lineHeight = 20.sp
+            color = TextoSecundario,
+            fontSize = 16.sp,
+            lineHeight = 22.sp
         )
 
         Spacer(modifier = Modifier.height(28.dp))
@@ -123,7 +120,6 @@ fun AudienciaPantalla(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Botón de acción principal
         ContinuarBoton(
             onClick = {
                 onFinish(
@@ -137,7 +133,6 @@ fun AudienciaPantalla(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Texto de apoyo final con icono
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
@@ -146,14 +141,15 @@ fun AudienciaPantalla(
             Icon(
                 imageVector = Icons.Default.AutoAwesome,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(14.dp)
+                tint = TextoSecundario,
+                modifier = Modifier.size(16.dp)
             )
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "Estamos construyendo tu perfil estratégico",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 11.sp
+                color = TextoSecundario,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
             )
         }
 
@@ -174,59 +170,58 @@ private fun HeaderStep2(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Botón circular de volver
         Box(
             modifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(BackgroundTxt)
                 .clickable { onBackClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Volver",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = TextoSecundario,
                 modifier = Modifier.size(16.dp)
             )
         }
 
         Text(
             text = currentStep,
-            color = MaterialTheme.colorScheme.primary,
+            color = NaranjaPrimario,
             fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
         )
 
         Text(
             text = percentage,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp
+            color = TextoSecundario,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
         )
     }
 
     Spacer(modifier = Modifier.height(10.dp))
 
-    // Barra de progreso
     LinearProgressIndicator(
         progress = { progress },
         modifier = Modifier
             .fillMaxWidth()
             .height(4.dp)
             .clip(RoundedCornerShape(2.dp)),
-        color = MaterialTheme.colorScheme.primary,
-        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        color = NaranjaPrimario,
+        trackColor = BackgroundTxt,
     )
 }
 
-// Etiqueta pequeña de sección
 @Composable
 private fun SectionLabel(text: String) {
     Text(
         text = text,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        color = TextoSecundario,
         fontSize = 12.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp
     )
 }
@@ -237,13 +232,21 @@ private fun BuscarPaisField(texto: String, onTextoChange: (String) -> Unit) {
     OutlinedTextField(
         value = texto,
         onValueChange = onTextoChange,
-        placeholder = { Text(text = "Buscar país...") },
+        placeholder = { Text(text = "Buscar país...", color = TextoSecundario, fontSize = 14.sp) },
         leadingIcon = {
-            Icon(imageVector = Icons.Default.Search, contentDescription = "Buscar")
+            Icon(imageVector = Icons.Default.Search, contentDescription = "Buscar", tint = TextoSecundario)
         },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        singleLine = true
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = NaranjaPrimario,
+            unfocusedBorderColor = BordeTxt,
+            focusedContainerColor = BackgroundTxt,
+            unfocusedContainerColor = BackgroundTxt,
+            focusedTextColor = TextoPrimario,
+            unfocusedTextColor = TextoPrimario,
+            cursorColor = NaranjaPrimario
+        )
     )
 }
 
@@ -271,22 +274,23 @@ private fun RegionChip(bandera: String, nombre: String, selected: Boolean, onCli
         modifier = Modifier
             .border(
                 width = if (selected) 1.5.dp else 1.dp,
-                color = if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(10.dp)
+                color = if (selected) NaranjaPrimario
+                else BordeTxt,
+                shape = RoundedCornerShape(28.dp)
             )
-            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+            .background(BackgroundTxt, RoundedCornerShape(28.dp))
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = bandera, fontSize = 14.sp)
-        Spacer(modifier = Modifier.width(6.dp))
+        Text(text = bandera, fontSize = 16.sp)
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = nombre,
-            color = if (selected) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp
+            color = if (selected) TextoPrimario
+            else TextoSecundario,
+            fontSize = 14.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
         )
     }
 }
@@ -299,13 +303,14 @@ private fun RangoEdadSection(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         SectionLabel(text = "RANGO DE EDAD")
         Text(
             text = "${rangoEdad.start.toInt()} — ${rangoEdad.endInclusive.toInt()} años",
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 13.sp,
+            color = NaranjaPrimario,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -315,19 +320,18 @@ private fun RangoEdadSection(
         onValueChange = onRangoEdadChange,
         valueRange = 13f..65f,
         colors = SliderDefaults.colors(
-            thumbColor = MaterialTheme.colorScheme.primary,
-            activeTrackColor = MaterialTheme.colorScheme.primary,
-            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+            thumbColor = Color.White,
+            activeTrackColor = NaranjaPrimario,
+            inactiveTrackColor = BordeTxt
         )
     )
 
-    // Marcas de referencia debajo del slider
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         listOf("13", "25", "40", "55", "65+").forEach { marca ->
-            Text(text = marca, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+            Text(text = marca, color = TextoSecundario, fontSize = 12.sp, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -373,48 +377,47 @@ private fun GeneroCard(
         modifier = modifier
             .border(
                 width = if (selected) 1.5.dp else 1.dp,
-                color = if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(12.dp)
+                color = if (selected) NaranjaPrimario
+                else BordeTxt,
+                shape = RoundedCornerShape(24.dp)
             )
-            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+            .background(BackgroundTxt, RoundedCornerShape(24.dp))
             .clickable { onClick() }
-            .padding(vertical = 16.dp),
+            .padding(vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = if (selected) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(22.dp)
+            tint = if (selected) NaranjaPrimario
+            else TextoSecundario,
+            modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = label,
-            color = if (selected) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold
+            color = if (selected) TextoPrimario
+            else TextoSecundario,
+            fontSize = 12.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
         )
     }
 }
 
-// Botón de acción principal
 @Composable
 private fun ContinuarBoton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(14.dp),
+            .height(56.dp),
+        shape = RoundedCornerShape(28.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
             contentColor = Color.Black
         )
     ) {
-        Text(text = "Finalizar Configuración", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        Text(text = "Finalizar Configuración", fontSize = 16.sp, fontWeight = FontWeight.Bold)
     }
 }
 

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myviralpath.ui.theme.MyViralPathTheme
 import androidx.compose.ui.graphics.Color
+import com.example.myviralpath.ui.theme.*
 
 // Pantalla de Onboarding - Paso 1
 
@@ -33,13 +34,12 @@ fun OnboardingNichoPantalla(
     var selectedNiche by remember { mutableStateOf<String?>(null) }
     val selectedPlatforms = remember { mutableStateListOf<String>() }
 
-    // Contenedor principal: apila todo verticalmente y permite scroll
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(BackgroundOscuro)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -53,23 +53,21 @@ fun OnboardingNichoPantalla(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Título principal
         Text(
             text = "Primero, definamos tu terreno",
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 32.sp
+            color = TextoPrimario,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            lineHeight = 34.sp
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Subtítulo descriptivo
         Text(
             text = "Esto nos ayudará a analizar oportunidades reales en tu nicho",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 14.sp,
-            lineHeight = 20.sp
+            color = TextoSecundario,
+            fontSize = 16.sp,
+            lineHeight = 22.sp
         )
 
         Spacer(modifier = Modifier.height(28.dp))
@@ -117,14 +115,14 @@ fun OnboardingNichoPantalla(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Texto de apoyo final
         Text(
             text = "TOMA MENOS DE 30 SEGUNDOS",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
+            color = TextoSecundario,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            letterSpacing = 1.sp
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -144,14 +142,19 @@ private fun HeaderStep(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = currentStep, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+        Text(
+            text = currentStep,
+            color = NaranjaPrimario,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
 
-        // Botón circular de volver
         Box(
             modifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(BackgroundTxt)
                 .clickable { onBackClick() },
             contentAlignment = Alignment.Center
         ) {
@@ -165,15 +168,14 @@ private fun HeaderStep(
 
         Text(
             text = percentage,
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold
+            color = TextoSecundario,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
         )
     }
 
     Spacer(modifier = Modifier.height(10.dp))
 
-    // Barra de progreso
     LinearProgressIndicator(
         progress = { progress },
         modifier = Modifier
@@ -181,7 +183,7 @@ private fun HeaderStep(
             .height(4.dp)
             .clip(RoundedCornerShape(2.dp)),
         color = MaterialTheme.colorScheme.primary,
-        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        trackColor = BackgroundTxt,
     )
 }
 
@@ -192,10 +194,11 @@ private fun SectionTitle(icon: String, title: String) {
         Text(text = icon, color = MaterialTheme.colorScheme.primary, fontSize = 16.sp)
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = title,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            text = title.uppercase(),
+            color = TextoSecundario,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
         )
     }
 }
@@ -247,26 +250,26 @@ private fun NichoCarta(
         modifier = modifier
             .border(
                 width = if (selected) 1.5.dp else 1.dp,
-                color = if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(14.dp)
+                color = if (selected) NaranjaPrimario
+                else BordeTxt,
+                shape = RoundedCornerShape(28.dp)
             )
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(14.dp)
+                color = BackgroundTxt,
+                shape = RoundedCornerShape(28.dp)
             )
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = icon, fontSize = 16.sp)
-        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = icon, fontSize = 18.sp)
+        Spacer(modifier = Modifier.width(10.dp))
         Text(
             text = label,
-            color = if (selected) MaterialTheme.colorScheme.onBackground
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp,
-            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
+            color = if (selected) TextoPrimario
+            else TextoSecundario,
+            fontSize = 14.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
         )
     }
 }
@@ -301,22 +304,23 @@ private fun PlatformChip(label: String, selected: Boolean, onClick: () -> Unit) 
         modifier = Modifier
             .border(
                 width = if (selected) 1.5.dp else 1.dp,
-                color = if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(24.dp)
+                color = if (selected) NaranjaPrimario
+                else BordeTxt,
+                shape = RoundedCornerShape(28.dp)
             )
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(24.dp)
+                color = BackgroundTxt,
+                shape = RoundedCornerShape(28.dp)
             )
             .clickable { onClick() }
-            .padding(horizontal = 18.dp, vertical = 10.dp)
+            .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Text(
             text = label,
-            color = if (selected) MaterialTheme.colorScheme.onBackground
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp
+            color = if (selected) TextoPrimario
+            else TextoSecundario,
+            fontSize = 14.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
         )
     }
 }
@@ -329,8 +333,8 @@ private fun ContinuarBoton(enabled: Boolean, onClick: () -> Unit) {
         enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(14.dp),
+            .height(56.dp),
+        shape = RoundedCornerShape(28.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
             contentColor = Color.Black,
@@ -338,7 +342,7 @@ private fun ContinuarBoton(enabled: Boolean, onClick: () -> Unit) {
             disabledContentColor = Color.Black.copy(alpha = 0.3f)
         )
     ) {
-        Text(text = "Continuar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        Text(text = "Continuar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
     }
 }
 

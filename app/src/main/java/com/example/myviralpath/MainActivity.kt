@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(sessionStatus) {
                     if (sessionStatus is SessionStatus.Authenticated) {
                         authViewModel.checkOnboardingStatus()
+                        socialViewModel.updateLinkedAccounts()
                     }
                 }
 
