@@ -2,11 +2,14 @@ package com.example.myviralpath.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Groups
@@ -30,10 +33,16 @@ import androidx.compose.ui.draw.clip
 import com.example.myviralpath.ui.theme.MyViralPathTheme
 
 // Pantalla de Onboarding Paso audiencia ideal
-// Solo UI
 
 @Composable
-fun AudienciaPantalla() {
+fun AudienciaPantalla(
+    onBackClick: () -> Unit = {},
+    onFinish: (countryName: String, ageMin: Int, ageMax: Int, gender: String) -> Unit = { _, _, _, _ -> }
+) {
+    var countryName by remember { mutableStateOf("") }
+    var ageRange by remember { mutableStateOf(18f..35f) }
+    var selectedGender by remember { mutableStateOf("MIXTO") }
+
     // Contenedor principal: apila todo verticalmente y permite scroll
     Column(
         modifier = Modifier
@@ -45,7 +54,12 @@ fun AudienciaPantalla() {
         Spacer(modifier = Modifier.height(24.dp))
 
         // Encabezado con progreso
-        HeaderStep2(currentStep = "PASO 2 DE 3", percentage = "66% Completado", progress = 0.66f)
+        HeaderStep2(
+            currentStep = "PASO 2 DE 3",
+            percentage = "66% Completado",
+            progress = 0.66f,
+            onBackClick = onBackClick
+        )
 
         Spacer(modifier = Modifier.height(28.dp))
 
@@ -75,16 +89,25 @@ fun AudienciaPantalla() {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        BuscarPaisField()
+        BuscarPaisField(
+            texto = countryName,
+            onTextoChange = { countryName = it }
+        )
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        RegionChipsRow()
+        RegionChipsRow(
+            selectedCountry = countryName,
+            onCountrySelected = { countryName = it }
+        )
 
         Spacer(modifier = Modifier.height(28.dp))
 
         // Sección: rango de edad
-        RangoEdadSection()
+        RangoEdadSection(
+            rangoEdad = ageRange,
+            onRangoEdadChange = { ageRange = it }
+        )
 
         Spacer(modifier = Modifier.height(28.dp))
 
@@ -93,12 +116,24 @@ fun AudienciaPantalla() {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        GeneroObjetivoRow()
+        GeneroObjetivoRow(
+            selectedGender = selectedGender,
+            onGenderSelected = { selectedGender = it }
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // Botón de acción principal
-        ContinuarBoton()
+        ContinuarBoton(
+            onClick = {
+                onFinish(
+                    countryName,
+                    ageRange.start.toInt(),
+                    ageRange.endInclusive.toInt(),
+                    selectedGender
+                )
+            }
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -128,12 +163,34 @@ fun AudienciaPantalla() {
 
 // Header con paso actual, avatar y porcentaje completado
 @Composable
-private fun HeaderStep2(currentStep: String, percentage: String, progress: Float) {
+private fun HeaderStep2(
+    currentStep: String,
+    percentage: String,
+    progress: Float,
+    onBackClick: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        // Botón circular de volver
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Volver",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
         Text(
             text = currentStep,
             color = MaterialTheme.colorScheme.primary,
@@ -176,12 +233,10 @@ private fun SectionLabel(text: String) {
 
 // Campo de búsqueda de país
 @Composable
-private fun BuscarPaisField() {
-    var texto by remember { mutableStateOf("") }
-
+private fun BuscarPaisField(texto: String, onTextoChange: (String) -> Unit) {
     OutlinedTextField(
         value = texto,
-        onValueChange = { nuevoTexto -> texto = nuevoTexto },
+        onValueChange = onTextoChange,
         placeholder = { Text(text = "Buscar país...") },
         leadingIcon = {
             Icon(imageVector = Icons.Default.Search, contentDescription = "Buscar")
@@ -194,16 +249,16 @@ private fun BuscarPaisField() {
 
 // Fila de chips con banderas de países/regiones
 @Composable
-private fun RegionChipsRow() {
+private fun RegionChipsRow(selectedCountry: String, onCountrySelected: (String) -> Unit) {
     val regiones = listOf("🇪🇸" to "España", "🇲🇽" to "México", "🌐" to "Global (EN)")
-    val regionSeleccionada = "España" // dato fijo de ejemplo, sin lógica real
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         regiones.forEach { (bandera, nombre) ->
             RegionChip(
                 bandera = bandera,
                 nombre = nombre,
-                selected = nombre == regionSeleccionada
+                selected = nombre == selectedCountry,
+                onClick = { onCountrySelected(nombre) }
             )
         }
     }
@@ -211,7 +266,7 @@ private fun RegionChipsRow() {
 
 // Chip individual de región
 @Composable
-private fun RegionChip(bandera: String, nombre: String, selected: Boolean) {
+private fun RegionChip(bandera: String, nombre: String, selected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .border(
@@ -221,6 +276,7 @@ private fun RegionChip(bandera: String, nombre: String, selected: Boolean) {
                 shape = RoundedCornerShape(10.dp)
             )
             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+            .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -237,9 +293,10 @@ private fun RegionChip(bandera: String, nombre: String, selected: Boolean) {
 
 // Sección de rango de edad: etiqueta + valor + slider + marcas
 @Composable
-private fun RangoEdadSection() {
-    var rangoEdad by remember { mutableStateOf(18f..35f) }
-
+private fun RangoEdadSection(
+    rangoEdad: ClosedFloatingPointRange<Float>,
+    onRangoEdadChange: (ClosedFloatingPointRange<Float>) -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -255,7 +312,7 @@ private fun RangoEdadSection() {
 
     RangeSlider(
         value = rangoEdad,
-        onValueChange = { nuevoRango -> rangoEdad = nuevoRango },
+        onValueChange = onRangoEdadChange,
         valueRange = 13f..65f,
         colors = SliderDefaults.colors(
             thumbColor = MaterialTheme.colorScheme.primary,
@@ -277,26 +334,27 @@ private fun RangoEdadSection() {
 
 // Fila de 3 tarjetas de género objetivo
 @Composable
-private fun GeneroObjetivoRow() {
-    val generoSeleccionado = "Mixto" // dato fijo de ejemplo, sin lógica real
-
+private fun GeneroObjetivoRow(selectedGender: String, onGenderSelected: (String) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         GeneroCard(
             icon = Icons.Default.Groups,
             label = "MIXTO",
-            selected = "Mixto" == generoSeleccionado,
+            selected = "MIXTO" == selectedGender,
+            onClick = { onGenderSelected("MIXTO") },
             modifier = Modifier.weight(1f)
         )
         GeneroCard(
             icon = Icons.Default.Female,
             label = "FEMENINO",
-            selected = "Femenino" == generoSeleccionado,
+            selected = "FEMENINO" == selectedGender,
+            onClick = { onGenderSelected("FEMENINO") },
             modifier = Modifier.weight(1f)
         )
         GeneroCard(
             icon = Icons.Default.Male,
             label = "MASCULINO",
-            selected = "Masculino" == generoSeleccionado,
+            selected = "MASCULINO" == selectedGender,
+            onClick = { onGenderSelected("MASCULINO") },
             modifier = Modifier.weight(1f)
         )
     }
@@ -308,6 +366,7 @@ private fun GeneroCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     selected: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -319,6 +378,7 @@ private fun GeneroCard(
                 shape = RoundedCornerShape(12.dp)
             )
             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+            .clickable { onClick() }
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -342,9 +402,9 @@ private fun GeneroCard(
 
 // Botón de acción principal
 @Composable
-private fun ContinuarBoton() {
+private fun ContinuarBoton(onClick: () -> Unit) {
     Button(
-        onClick = {  },
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp),
@@ -354,7 +414,7 @@ private fun ContinuarBoton() {
             contentColor = Color.Black
         )
     ) {
-        Text(text = "Continuar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        Text(text = "Finalizar Configuración", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 

@@ -37,7 +37,7 @@ fun RegistrationScreen(
 
     RegistrationScreenContent(
         authState = authState,
-        onRegistroClick = { email, password -> viewModel.signUp(email, password) },
+        onRegistroClick = { email, password, nombre -> viewModel.signUp(email, password, nombre) },
         onLoginClick = onLoginClick
     )
 }
@@ -45,7 +45,7 @@ fun RegistrationScreen(
 @Composable
 fun RegistrationScreenContent(
     authState: AuthState,
-    onRegistroClick: (String, String) -> Unit,
+    onRegistroClick: (String, String, String) -> Unit,
     onLoginClick: () -> Unit
 ) {
     var nombre by remember { mutableStateOf("") }
@@ -130,7 +130,7 @@ fun RegistrationScreenContent(
         }
 
         Button(
-            onClick = { onRegistroClick(email, password) },
+            onClick = { onRegistroClick(email, password, nombre) },
             enabled = authState !is AuthState.Loading,
             modifier = Modifier
                 .fillMaxWidth()

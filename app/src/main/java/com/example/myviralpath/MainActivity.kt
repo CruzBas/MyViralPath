@@ -36,12 +36,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myviralpath.supabase.supabase
 import com.example.myviralpath.service.AuthViewModel
 import com.example.myviralpath.service.SocialAccountsViewModel
+import androidx.compose.runtime.LaunchedEffect
+import com.example.myviralpath.ui.screens.OnboardingNichoPantalla
+import com.example.myviralpath.ui.screens.AudienciaPantalla
 import com.example.myviralpath.ui.screens.DashboardEstrategico
 import com.example.myviralpath.ui.screens.RegistrationScreen
 import com.example.myviralpath.ui.screens.PantallaLogin
 import com.example.myviralpath.ui.screens.TendenciasPantalla
 import com.example.myviralpath.ui.screens.VinculacionCuentasScreen
 import com.example.myviralpath.ui.theme.MyViralPathTheme
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.CompositionLocalProvider
@@ -78,7 +83,14 @@ class MainActivity : ComponentActivity() {
             MyViralPathTheme {
                 val authViewModel: AuthViewModel = viewModel()
                 val sessionStatus by supabase.auth.sessionStatus.collectAsState(initial = SessionStatus.NotAuthenticated())
+                val onboardingCompleted by authViewModel.onboardingCompleted
                 val snackbarHostState = remember { SnackbarHostState() }
+
+                LaunchedEffect(sessionStatus) {
+                    if (sessionStatus is SessionStatus.Authenticated) {
+                        authViewModel.checkOnboardingStatus()
+                    }
+                }
 
                 CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
                     Scaffold(
@@ -93,51 +105,100 @@ class MainActivity : ComponentActivity() {
                         Box(modifier = Modifier.padding(innerPadding)) {
                             when (sessionStatus) {
                                 is SessionStatus.Authenticated -> {
-                                    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.DASHBOARD) }
-                                    
-                                    MaterialTheme(
-                                        colorScheme = MaterialTheme.colorScheme.copy(
-                                            surfaceContainer = BackgroundOscuro,
-                                            onSurfaceVariant = TextoSecundario,
-                                            primary = NaranjaPrimario
-                                        )
-                                    ) {
-                                        NavigationSuiteScaffold(
-                                            navigationSuiteItems = {
-                                                AppDestinations.entries.forEach {
-                                                    item(
-                                                        icon = { Icon(it.icon, contentDescription = it.label) },
-                                                        label = { Text(it.label) },
-                                                        selected = it == currentDestination,
-                                                        onClick = { currentDestination = it }
+                                    when (onboardingCompleted) {
+                                        null -> {
+                                            Box(
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator(color = NaranjaPrimario)
+                                            }
+                                        }
+                                        false -> {
+                                            var onboardingStep by rememberSaveable { mutableStateOf(1) }
+                                            var onboardingNiche by rememberSaveable { mutableStateOf("") }
+                                            var onboardingPlatforms by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
+
+                                            when (onboardingStep) {
+                                                1 -> {
+                                                    OnboardingNichoPantalla(
+                                                        onBackClick = {
+                                                            authViewModel.signOut()
+                                                        },
+                                                        onContinue = { niche, platforms ->
+                                                            onboardingNiche = niche
+                                                            onboardingPlatforms = platforms
+                                                            onboardingStep = 2
+                                                        }
                                                     )
                                                 }
-                                            },
-                                            containerColor = BackgroundOscuro,
-                                            contentColor = TextoPrimario,
-                                            modifier = Modifier.fillMaxSize()
-                                        ) {
-                                            when (currentDestination) {
-                                                AppDestinations.DASHBOARD -> {
-                                                    val isInstagramLinked by socialViewModel.isInstagramLinked.collectAsState()
-                                                    val isYoutubeLinked by socialViewModel.isYoutubeLinked.collectAsState()
-                                                    val isLoading by socialViewModel.isLoading.collectAsState()
-                                                    
-                                                    if (isInstagramLinked || isYoutubeLinked) {
-                                                        DashboardEstrategico()
-                                                    } else {
-                                                        VinculacionCuentasScreen(
-                                                            isLoading = isLoading,
-                                                            onLinkInstagram = { socialViewModel.linkInstagram() },
-                                                            onLinkYoutube = { socialViewModel.linkYoutube() }
+                                                2 -> {
+                                                    AudienciaPantalla(
+                                                        onBackClick = {
+                                                            onboardingStep = 1
+                                                        },
+                                                        onFinish = { country, ageMin, ageMax, gender ->
+                                                            authViewModel.saveOnboardingData(
+                                                                niche = onboardingNiche,
+                                                                platforms = onboardingPlatforms,
+                                                                countryName = country,
+                                                                ageMin = ageMin,
+                                                                ageMax = ageMax,
+                                                                gender = gender
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        true -> {
+                                            var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.DASHBOARD) }
+
+                                            MaterialTheme(
+                                                colorScheme = MaterialTheme.colorScheme.copy(
+                                                    surfaceContainer = BackgroundOscuro,
+                                                    onSurfaceVariant = TextoSecundario,
+                                                    primary = NaranjaPrimario
+                                                )
+                                            ) {
+                                                NavigationSuiteScaffold(
+                                                    navigationSuiteItems = {
+                                                        AppDestinations.entries.forEach {
+                                                            item(
+                                                                icon = { Icon(it.icon, contentDescription = it.label) },
+                                                                label = { Text(it.label) },
+                                                                selected = it == currentDestination,
+                                                                onClick = { currentDestination = it }
+                                                            )
+                                                        }
+                                                    },
+                                                    containerColor = BackgroundOscuro,
+                                                    contentColor = TextoPrimario,
+                                                    modifier = Modifier.fillMaxSize()
+                                                ) {
+                                                    when (currentDestination) {
+                                                        AppDestinations.DASHBOARD -> {
+                                                            val isInstagramLinked by socialViewModel.isInstagramLinked.collectAsState()
+                                                            val isYoutubeLinked by socialViewModel.isYoutubeLinked.collectAsState()
+                                                            val isLoading by socialViewModel.isLoading.collectAsState()
+
+                                                            if (isInstagramLinked || isYoutubeLinked) {
+                                                                DashboardEstrategico()
+                                                            } else {
+                                                                VinculacionCuentasScreen(
+                                                                    isLoading = isLoading,
+                                                                    onLinkInstagram = { socialViewModel.linkInstagram() },
+                                                                    onLinkYoutube = { socialViewModel.linkYoutube() }
+                                                                )
+                                                            }
+                                                        }
+                                                        AppDestinations.TENDENCIAS -> TendenciasPantalla()
+                                                        else -> Greeting(
+                                                            name = currentDestination.label,
+                                                            onSignOut = { authViewModel.signOut() }
                                                         )
                                                     }
                                                 }
-                                                AppDestinations.TENDENCIAS -> TendenciasPantalla()
-                                                else -> Greeting(
-                                                    name = currentDestination.label,
-                                                    onSignOut = { authViewModel.signOut() }
-                                                )
                                             }
                                         }
                                     }
