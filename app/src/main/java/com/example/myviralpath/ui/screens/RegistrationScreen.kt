@@ -67,8 +67,8 @@ fun RegistrationScreenContent(
                 contentDescription = "Logo de ViralPath",
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(RoundedCornerShape(16.dp)), //Bordes redondeados
-                contentScale = ContentScale.Crop // Se encarga de que la imagen llene el espacio sin distorsionarse
+                    .clip(RoundedCornerShape(16.dp)), 
+                contentScale = ContentScale.Crop
             )
 
 
