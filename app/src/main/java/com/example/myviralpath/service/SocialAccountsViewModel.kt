@@ -47,7 +47,10 @@ class SocialAccountsViewModel : ViewModel() {
         executeLink {
             supabase.auth.linkIdentity(
                 provider = Facebook,
-                redirectUrl = "myviralpath://login-callback"
+                redirectUrl = "myviralpath://login-callback",
+                config = {
+                    queryParams["prompt"] = "select_account"
+                }
             )
         }
     }
@@ -56,7 +59,10 @@ class SocialAccountsViewModel : ViewModel() {
         executeLink {
             supabase.auth.linkIdentity(
                 provider = Google,
-                redirectUrl = "myviralpath://login-callback"
+                redirectUrl = "myviralpath://login-callback",
+                config = {
+                    queryParams["prompt"] = "select_account"
+                }
             )
         }
     }

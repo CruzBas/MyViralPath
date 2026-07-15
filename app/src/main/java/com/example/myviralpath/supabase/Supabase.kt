@@ -14,8 +14,8 @@ val supabase = createSupabaseClient(
 ) {
     install(Postgrest)
     install(Auth) {
-
         autoLoadFromStorage = true
+        alwaysAutoRefresh = true
         scheme = "myviralpath"
         host = "login-callback"
     }
