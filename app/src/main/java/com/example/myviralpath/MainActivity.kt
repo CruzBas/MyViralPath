@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -42,6 +41,12 @@ import com.example.myviralpath.ui.screens.AudienciaPantalla
 import com.example.myviralpath.ui.screens.DashboardEstrategico
 import com.example.myviralpath.ui.screens.RegistrationScreen
 import com.example.myviralpath.ui.screens.PantallaLogin
+import com.example.myviralpath.ui.screens.PlanEstrategicoScreen
+import com.example.myviralpath.ui.screens.NuevoContenidoScreen
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.Checklist
+import androidx.compose.material.icons.automirrored.rounded.ShowChart
+import androidx.compose.material.icons.rounded.Insights
 import com.example.myviralpath.ui.screens.TendenciasPantalla
 import com.example.myviralpath.ui.screens.VinculacionCuentasScreen
 import com.example.myviralpath.ui.theme.MyViralPathTheme
@@ -154,6 +159,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                         true -> {
                                             var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.DASHBOARD) }
+                                            var showNewContent by rememberSaveable { mutableStateOf(false) }
 
                                             MaterialTheme(
                                                 colorScheme = MaterialTheme.colorScheme.copy(
@@ -162,42 +168,48 @@ class MainActivity : ComponentActivity() {
                                                     primary = NaranjaPrimario
                                                 )
                                             ) {
-                                                NavigationSuiteScaffold(
-                                                    navigationSuiteItems = {
-                                                        AppDestinations.entries.forEach {
-                                                            item(
-                                                                icon = { Icon(it.icon, contentDescription = it.label) },
-                                                                label = { Text(it.label) },
-                                                                selected = it == currentDestination,
-                                                                onClick = { currentDestination = it }
-                                                            )
-                                                        }
-                                                    },
-                                                    containerColor = BackgroundOscuro,
-                                                    contentColor = TextoPrimario,
-                                                    modifier = Modifier.fillMaxSize()
-                                                ) {
-                                                    when (currentDestination) {
-                                                        AppDestinations.DASHBOARD -> {
-                                                            val isInstagramLinked by socialViewModel.isInstagramLinked.collectAsState()
-                                                            val isYoutubeLinked by socialViewModel.isYoutubeLinked.collectAsState()
-                                                            val isLoading by socialViewModel.isLoading.collectAsState()
-
-                                                            if (isInstagramLinked || isYoutubeLinked) {
-                                                                DashboardEstrategico()
-                                                            } else {
-                                                                VinculacionCuentasScreen(
-                                                                    isLoading = isLoading,
-                                                                    onLinkInstagram = { socialViewModel.linkInstagram() },
-                                                                    onLinkYoutube = { socialViewModel.linkYoutube() }
+                                                if (showNewContent) {
+                                                    NuevoContenidoScreen(onBack = { showNewContent = false })
+                                                } else {
+                                                    NavigationSuiteScaffold(
+                                                        navigationSuiteItems = {
+                                                            AppDestinations.entries.forEach {
+                                                                item(
+                                                                    icon = { Icon(it.icon, contentDescription = it.label) },
+                                                                    label = { Text(it.label) },
+                                                                    selected = it == currentDestination,
+                                                                    onClick = { currentDestination = it },
                                                                 )
                                                             }
+                                                        },
+                                                        containerColor = BackgroundOscuro,
+                                                        contentColor = TextoPrimario,
+                                                        modifier = Modifier.fillMaxSize()
+                                                    ) {
+                                                        when (currentDestination) {
+                                                            AppDestinations.DASHBOARD -> {
+                                                                val isInstagramLinked by socialViewModel.isInstagramLinked.collectAsState()
+                                                                val isYoutubeLinked by socialViewModel.isYoutubeLinked.collectAsState()
+                                                                val isLoading by socialViewModel.isLoading.collectAsState()
+
+                                                                if (isInstagramLinked || isYoutubeLinked) {
+                                                                    DashboardEstrategico()
+                                                                } else {
+                                                                    VinculacionCuentasScreen(
+                                                                        isLoading = isLoading,
+                                                                        onLinkInstagram = { socialViewModel.linkInstagram() },
+                                                                        onLinkYoutube = { socialViewModel.linkYoutube() }
+                                                                    )
+                                                                }
+                                                            }
+                                                            AppDestinations.PLAN -> PlanEstrategicoScreen(
+                                                                onNavigateToNewContent = { showNewContent = true }
+                                                            )
+                                                            else -> Greeting(
+                                                                name = currentDestination.label,
+                                                                onSignOut = { authViewModel.signOut() }
+                                                            )
                                                         }
-                                                        AppDestinations.TENDENCIAS -> TendenciasPantalla()
-                                                        else -> Greeting(
-                                                            name = currentDestination.label,
-                                                            onSignOut = { authViewModel.signOut() }
-                                                        )
                                                     }
                                                 }
                                             }
@@ -283,10 +295,10 @@ enum class AppDestinations(
     val label: String,
     val icon: ImageVector,
 ) {
-    DASHBOARD("Dashboard", Icons.Rounded.Dashboard),
-    TENDENCIAS("Tendencias", Icons.Rounded.TrendingUp),
-    PLAN("Plan", Icons.Rounded.Description),
-    PERFIL("Perfil", Icons.Rounded.Person),
+    DASHBOARD("Strategy", Icons.Rounded.Insights),
+    PLAN("Calendar", Icons.Rounded.CalendarMonth),
+    TAREAS("Tasks", Icons.Rounded.Checklist),
+    GROWTH("Growth", Icons.AutoMirrored.Rounded.ShowChart),
 }
 
 @Composable
