@@ -5,14 +5,16 @@ import io.github.jan.supabase.compose.auth.composeAuth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.functions.Functions
 import io.ktor.client.plugins.HttpTimeout
 import io.github.jan.supabase.annotations.SupabaseInternal
 
 val supabase = createSupabaseClient(
     supabaseUrl = "https://qalcenruzfnytwfkhumb.supabase.co",
-    supabaseKey="sb_publishable_4OqlD6LlW0sugcNGoVl66Q_kgx7iWB9"// Reemplaza con tu clave anon de Supabase
+    supabaseKey = "sb_publishable_4OqlD6LlW0sugcNGoVl66Q_kgx7iWB9"
 ) {
     install(Postgrest)
+    install(Functions)
     install(Auth) {
         autoLoadFromStorage = true
         alwaysAutoRefresh = true
