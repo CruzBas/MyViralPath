@@ -21,6 +21,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.intOrNull
+import io.github.jan.supabase.annotations.SupabaseInternal
 
 // ─── Data models ─────────────────────────────────────────────────────────────
 
@@ -56,6 +57,12 @@ sealed class DashboardUiState {
     object NotLinked : DashboardUiState()
 }
 
+@Serializable
+data class FetchStatsRequest(
+    @SerialName("provider_token") val providerToken: String? = null,
+    @SerialName("channel_id") val channelId: String? = null
+)
+
 // ─── ViewModel ────────────────────────────────────────────────────────────────
 
 class DashboardViewModel : ViewModel() {
@@ -66,40 +73,60 @@ class DashboardViewModel : ViewModel() {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
     init {
-        loadDashboard()
+        viewModelScope.launch {
+            supabase.auth.sessionStatus.collect { status ->
+                if (status is io.github.jan.supabase.auth.status.SessionStatus.Authenticated) {
+                    loadDashboard()
+                } else if (status is io.github.jan.supabase.auth.status.SessionStatus.NotAuthenticated) {
+                    _uiState.value = DashboardUiState.NotLinked
+                }
+            }
+        }
     }
 
     fun loadDashboard() {
         viewModelScope.launch {
             _uiState.value = DashboardUiState.Loading
             try {
-                // 1. Check if user is authenticated
                 val user = supabase.auth.currentUserOrNull()
                 if (user == null) {
                     _uiState.value = DashboardUiState.NotLinked
                     return@launch
                 }
 
-                // 2. First try to load from cache (youtube_analytics table)
+                // Intentar cargar de caché primero para dar respuesta inmediata
                 val cached = loadFromCache(user.id)
                 if (cached != null) {
                     _uiState.value = DashboardUiState.Success(cached)
-                    // Refresh in background if data is older than 30 min
-                    val thirtyMinAgo = System.currentTimeMillis() - (30 * 60 * 1000)
-                    if (cached.fetchedAt.isNotEmpty()) {
-                        refreshFromEdgeFunction()
-                    }
+                    // Refrescar en segundo plano si hay caché
+                    refreshFromEdgeFunction()
                     return@launch
                 }
 
-                // 3. No cache – fetch fresh from Edge Function
+                // Si no hay caché, refrescar obligatoriamente
                 refreshFromEdgeFunction()
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                _uiState.value = DashboardUiState.Error(
-                    e.localizedMessage ?: "Error al cargar datos de YouTube"
-                )
+                handleLoadError(e)
+            }
+        }
+    }
+
+    private fun handleLoadError(e: Exception) {
+        val message = e.localizedMessage ?: "Error desconocido"
+        when {
+            message.contains("permisos", ignoreCase = true) || 
+            message.contains("sincronizar", ignoreCase = true) ||
+            message.contains("provider_token", ignoreCase = true) ||
+            message.contains("401") || message.contains("403") -> {
+                _uiState.value = DashboardUiState.Error("Tu sesión no tiene permisos de YouTube. Pulsa 'Reintentar' para sincronizar con Google.")
+            }
+            message.contains("rate_limit", ignoreCase = true) -> {
+                _uiState.value = DashboardUiState.Error("Demasiados intentos. Espera un momento y reintenta.")
+            }
+            else -> {
+                _uiState.value = DashboardUiState.Error("Error al conectar con YouTube. Verifica tu conexión e inténtalo de nuevo.")
             }
         }
     }
@@ -140,39 +167,56 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
-    private suspend fun refreshFromEdgeFunction() {
+    private suspend fun refreshFromEdgeFunction(cachedChannelId: String? = null) {
         try {
-            // Get Google provider_token if the user linked Google
-            val user = supabase.auth.currentUserOrNull() ?: return
+            val session = supabase.auth.currentSessionOrNull()
+            val user = session?.user ?: supabase.auth.retrieveUserForCurrentSession()
             val googleIdentity = user.identities?.firstOrNull { it.provider == "google" }
-            val providerToken = googleIdentity?.identityData?.get("provider_token")
-                ?.jsonPrimitive?.content
 
-            // Build request body
-            val bodyObj = buildJsonObject {
-                if (providerToken != null) {
-                    put("provider_token", providerToken)
-                }
-                // If no OAuth token and no API key, edge function will return error
+            // 2. Try to find the provider token
+            val providerToken = session?.providerToken
+                ?: googleIdentity?.identityData?.get("provider_token")?.jsonPrimitive?.content
+                ?: googleIdentity?.identityData?.get("access_token")?.jsonPrimitive?.content
+
+            // 3. Validation: If we have NO token and NO cached channel, we need Google Auth
+            if (providerToken == null && cachedChannelId.isNullOrEmpty()) {
+                _uiState.value = DashboardUiState.Error(
+                    "Tu sesión actual no tiene permisos de YouTube. Por favor, pulsa 'Reintentar' para sincronizar con Google."
+                )
+                return
             }
 
+            // Build request body using data class to ensure correct serialization and headers
+            val requestBody = FetchStatsRequest(
+                providerToken = providerToken,
+                channelId = cachedChannelId
+            )
+
+            @OptIn(SupabaseInternal::class)
             val response = supabase.functions.invoke(
                 function = "fetch-youtube-stats",
-                body = bodyObj
+                body = requestBody
             )
 
             val responseBody = response.body<String>()
-            val responseJson = json.parseToJsonElement(responseBody).jsonObject
+            println("YouTube Debug Response: $responseBody") // Log para depuración
+            
+            val responseJson = try {
+                json.parseToJsonElement(responseBody).jsonObject
+            } catch (e: Exception) {
+                _uiState.value = DashboardUiState.Error("Respuesta inválida del servidor. Reintenta en unos segundos.")
+                return
+            }
 
             val success = responseJson["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
             if (!success) {
-                val errMsg = responseJson["error"]?.jsonPrimitive?.content ?: "Error desconocido"
-                // If edge function fails, show cached data or not-linked state
-                val cached = loadFromCache(user.id)
-                _uiState.value = if (cached != null) {
-                    DashboardUiState.Success(cached)
+                val errMsg = responseJson["error"]?.jsonPrimitive?.content ?: "Error desconocido en el servidor"
+                
+                // Si falla la función, mostramos el error específico del servidor si es posible
+                if (errMsg.contains("token") || errMsg.contains("auth")) {
+                    _uiState.value = DashboardUiState.Error("Sesión de Google expirada. Pulsa 'Reintentar' para sincronizar.")
                 } else {
-                    DashboardUiState.NotLinked
+                    _uiState.value = DashboardUiState.Error("YouTube dice: $errMsg")
                 }
                 return
             }
@@ -201,16 +245,57 @@ class DashboardViewModel : ViewModel() {
         } catch (e: Exception) {
             e.printStackTrace()
             // Don't override success state if we already have cached data
-            if (_uiState.value !is DashboardUiState.Success) {
-                _uiState.value = DashboardUiState.Error(
-                    e.localizedMessage ?: "Error al conectar con YouTube"
-                )
+            val errorMsg = e.localizedMessage ?: "Error al conectar con YouTube"
+            
+            // Parse exception to avoid ugly raw strings
+            var cleanMsg = if (errorMsg.contains("\"error\":")) {
+                try {
+                    // try to extract the inner JSON error if present in the exception string
+                    val jsonPart = errorMsg.substringBefore("}\nURL:").plus("}")
+                    val parsed = json.parseToJsonElement(jsonPart).jsonObject
+                    parsed["error"]?.jsonPrimitive?.content ?: "Error al conectar con YouTube"
+                } catch (ex: Exception) {
+                    "Error al cargar datos de YouTube"
+                }
+            } else {
+                "Error de conexión con YouTube"
+            }
+
+            val isAuthError = cleanMsg.contains("token", ignoreCase = true) || 
+                cleanMsg.contains("auth", ignoreCase = true) ||
+                cleanMsg.contains("credentials", ignoreCase = true) ||
+                errorMsg.contains("400") || 
+                errorMsg.contains("401") ||
+                errorMsg.contains("403")
+
+            if (isAuthError) {
+                cleanMsg = "Sesión de Google expirada o sin permisos. Pulsa 'Reintentar' para sincronizar con Google."
+            }
+
+            // Override success state ONLY if it's an auth error, so the user can re-authenticate
+            if (_uiState.value !is DashboardUiState.Success || isAuthError) {
+                _uiState.value = DashboardUiState.Error(cleanMsg)
             }
         }
     }
 
     fun retry() {
         loadDashboard()
+    }
+    
+    fun signInWithGoogle() {
+        viewModelScope.launch {
+            try {
+                supabase.auth.signInWith(io.github.jan.supabase.auth.providers.Google) {
+                    scopes.add("https://www.googleapis.com/auth/youtube.readonly")
+                    queryParams["prompt"] = "consent"
+                    queryParams["access_type"] = "offline"
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.value = DashboardUiState.Error("Error al iniciar Google Sign-In")
+            }
+        }
     }
 
     /** Formatea números grandes: 1500000 → "1.5M", 24000 → "24K" */

@@ -58,10 +58,18 @@ fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
                 item { LoadingCard() }
             }
             is DashboardUiState.Error -> {
+                val errorState = uiState as DashboardUiState.Error
                 item {
                     ErrorCard(
-                        message = (uiState as DashboardUiState.Error).message,
-                        onRetry = { dashboardViewModel.retry() }
+                        message = errorState.message,
+                        onRetry = {
+                            if (errorState.message.contains("sincronizar", ignoreCase = true) || 
+                                errorState.message.contains("permisos", ignoreCase = true)) {
+                                dashboardViewModel.signInWithGoogle()
+                            } else {
+                                dashboardViewModel.retry()
+                            }
+                        }
                     )
                 }
             }
@@ -69,9 +77,7 @@ fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
                 item {
                     NoVinculadoCard(
                         onVerDetallesClick = {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Vincula tu cuenta de Google/YouTube en Ajustes")
-                            }
+                            dashboardViewModel.signInWithGoogle()
                         }
                     )
                 }
@@ -99,7 +105,6 @@ fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
     }
 }
 
-// ─── Header ──────────────────────────────────────────────────────────────────
 
 @Composable
 fun SeccionHeader() {

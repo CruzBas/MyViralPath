@@ -61,7 +61,9 @@ class SocialAccountsViewModel : ViewModel() {
                 provider = Google,
                 redirectUrl = "myviralpath://login-callback",
                 config = {
-                    queryParams["prompt"] = "select_account"
+                    scopes.add("https://www.googleapis.com/auth/youtube.readonly")
+                    queryParams["prompt"] = "consent"
+                    queryParams["access_type"] = "offline"
                 }
             )
         }

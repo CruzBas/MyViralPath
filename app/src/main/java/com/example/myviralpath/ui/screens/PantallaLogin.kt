@@ -40,7 +40,8 @@ fun PantallaLogin(
     PantallaLoginContent(
         authState = authState,
         onLoginClick = { correo, contra -> viewModel.signIn(correo, contra) },
-        onRegistroClick = onRegistroClick
+        onRegistroClick = onRegistroClick,
+        onGoogleClick = { viewModel.signInWithGoogle() }
     )
 }
 
@@ -48,7 +49,8 @@ fun PantallaLogin(
 fun PantallaLoginContent(
     authState: AuthState,
     onLoginClick: (String, String) -> Unit,
-    onRegistroClick: () -> Unit
+    onRegistroClick: () -> Unit,
+    onGoogleClick: () -> Unit = {}
 ) {
     // Estados para almacenar el texto ingresado por el usuario
     var correo by remember { mutableStateOf("") }
@@ -228,6 +230,62 @@ fun PantallaLoginContent(
                     text = "Iniciar Sesión",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Separador "O"
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = BordeTxt,
+                thickness = 1.dp
+            )
+            Text(
+                text = " O ",
+                color = TextoSecundario,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = BordeTxt,
+                thickness = 1.dp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Botón de Google
+        Button(
+            onClick = onGoogleClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(28.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = BackgroundTxt
+            )
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_favorite),
+                    contentDescription = null,
+                    tint = NaranjaPrimario,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "Continuar con Google",
+                    color = TextoPrimario,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

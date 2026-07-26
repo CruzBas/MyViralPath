@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myviralpath.supabase.supabase
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
@@ -108,6 +109,22 @@ class AuthViewModel : ViewModel() {
                     else -> "Hubo un problema al iniciar sesión. Inténtalo más tarde."
                 }
                 _authState.value = AuthState.Error(notice)
+            }
+        }
+    }
+
+    fun signInWithGoogle() {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            try {
+                supabase.auth.signInWith(Google) {
+                    scopes.add("https://www.googleapis.com/auth/youtube.readonly")
+                    queryParams["prompt"] = "consent"
+                    queryParams["access_type"] = "offline"
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _authState.value = AuthState.Error("Error al conectar con Google")
             }
         }
     }

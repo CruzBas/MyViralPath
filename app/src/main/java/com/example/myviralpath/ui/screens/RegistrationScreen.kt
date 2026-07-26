@@ -38,7 +38,8 @@ fun RegistrationScreen(
     RegistrationScreenContent(
         authState = authState,
         onRegistroClick = { email, password, nombre -> viewModel.signUp(email, password, nombre) },
-        onLoginClick = onLoginClick
+        onLoginClick = onLoginClick,
+        onGoogleClick = { viewModel.signInWithGoogle() }
     )
 }
 
@@ -46,7 +47,8 @@ fun RegistrationScreen(
 fun RegistrationScreenContent(
     authState: AuthState,
     onRegistroClick: (String, String, String) -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    onGoogleClick: () -> Unit = {}
 ) {
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -182,7 +184,10 @@ fun RegistrationScreenContent(
 
         SocialButton(text = "Continuar con Apple")
         Spacer(modifier = Modifier.height(16.dp))
-        SocialButton(text = "Continuar con Google")
+        SocialButton(
+            text = "Continuar con Google",
+            onClick = onGoogleClick
+        )
 
         Spacer(modifier = Modifier.height(48.dp))
 
@@ -230,9 +235,12 @@ fun CustomTextField(
 }
 
 @Composable
-fun SocialButton(text: String) {
+fun SocialButton(
+    text: String,
+    onClick: () -> Unit = {}
+) {
     Button(
-        onClick = { /* TODO: Social login */ },
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
