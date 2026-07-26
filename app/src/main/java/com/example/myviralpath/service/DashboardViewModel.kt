@@ -258,7 +258,7 @@ class DashboardViewModel : ViewModel() {
                     "Error al cargar datos de YouTube"
                 }
             } else {
-                "Error de conexión con YouTube"
+                "Error de conexión con YouTube: $errorMsg"
             }
 
             val isAuthError = cleanMsg.contains("token", ignoreCase = true) || 

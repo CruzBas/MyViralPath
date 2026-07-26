@@ -135,7 +135,7 @@ function buildStats(channel, stats, recentVideos) {
 
 function jsonError(message, status) {
   return new Response(JSON.stringify({ success: false, error: message }), {
-    status,
+    status: 200, // Always return 200 so the client can parse the JSON error body
     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });
 }
