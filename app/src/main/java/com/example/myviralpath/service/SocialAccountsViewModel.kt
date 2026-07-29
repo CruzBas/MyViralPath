@@ -49,6 +49,10 @@ class SocialAccountsViewModel : ViewModel() {
                 provider = Facebook,
                 redirectUrl = "myviralpath://login-callback",
                 config = {
+                    scopes.add("pages_show_list")
+                    scopes.add("pages_read_engagement")
+                    scopes.add("instagram_basic")
+                    scopes.add("instagram_manage_insights")
                     queryParams["prompt"] = "select_account"
                 }
             )

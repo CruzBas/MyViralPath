@@ -35,11 +35,21 @@ import com.example.myviralpath.ui.components.LocalSnackbarHostState
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import com.example.myviralpath.service.MetaStats
+
+
 @Composable
 fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
     val snackbarHostState = LocalSnackbarHostState.current
     val scope = rememberCoroutineScope()
     val uiState by dashboardViewModel.uiState.collectAsState()
+    var selectedTabIndex by remember { mutableStateOf(0) }
 
     LazyColumn(
         modifier = Modifier
@@ -83,23 +93,63 @@ fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
                 }
             }
             is DashboardUiState.Success -> {
-                val stats = (uiState as DashboardUiState.Success).stats
-
+                val successState = uiState as DashboardUiState.Success
+                val ytStats = successState.stats
+                val metaStats = successState.metaStats
+                
                 item {
-                    TarjetaCanalYoutube(stats = stats)
+                    val tabs = listOf("YouTube", "Meta")
+                    TabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        containerColor = BackgroundOscuro,
+                        contentColor = NaranjaPrimario,
+                        indicator = { tabPositions ->
+                            TabRowDefaults.Indicator(
+                                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                                color = NaranjaPrimario
+                            )
+                        }
+                    ) {
+                        tabs.forEachIndexed { index, title ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { selectedTabIndex = index },
+                                text = { Text(text = title, color = if (selectedTabIndex == index) NaranjaPrimario else TextoSecundario, fontWeight = FontWeight.Bold) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                item { Spacer(modifier = Modifier.height(30.dp)) }
-                item { SeccionTitulo("Metricas Estrategicas") }
-                item { Spacer(modifier = Modifier.height(16.dp)) }
-                item { MetricasReales(stats = stats) }
-                item { Spacer(modifier = Modifier.height(30.dp)) }
-                item { SeccionTitulo("Videos Recientes", mostrarFlecha = true) }
-                item { Spacer(modifier = Modifier.height(16.dp)) }
-                item { TendenciasReales(videos = stats.recentVideos) }
-                item { Spacer(modifier = Modifier.height(40.dp)) }
-                item { SeccionTitulo("ProximosPasos") }
-                item { Spacer(modifier = Modifier.height(16.dp)) }
-                item { ProximosPasosReales(stats = stats) }
+
+                if (selectedTabIndex == 0) {
+                    if (ytStats != null) {
+                        item { TarjetaCanalYoutube(stats = ytStats) }
+                        item { Spacer(modifier = Modifier.height(30.dp)) }
+                        item { SeccionTitulo("Metricas Estrategicas") }
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
+                        item { MetricasReales(stats = ytStats) }
+                        item { Spacer(modifier = Modifier.height(30.dp)) }
+                        item { SeccionTitulo("Videos Recientes", mostrarFlecha = true) }
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
+                        item { TendenciasReales(videos = ytStats.recentVideos) }
+                        item { Spacer(modifier = Modifier.height(40.dp)) }
+                        item { SeccionTitulo("ProximosPasos") }
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
+                        item { ProximosPasosReales(stats = ytStats) }
+                    } else {
+                        item {
+                            NoVinculadoCard(onVerDetallesClick = { dashboardViewModel.signInWithGoogle() })
+                        }
+                    }
+                } else {
+                    if (metaStats != null) {
+                        item { TarjetaCanalMeta(stats = metaStats) }
+                    } else {
+                        item {
+                            NoVinculadoMetaCard(onVerDetallesClick = {}) // Handle meta linking in SocialAccountsViewModel ideally, but here we can just show empty state
+                        }
+                    }
+                }
             }
         }
     }
@@ -541,6 +591,94 @@ fun DashboardEstrategicoPreview() {
     MyViralPathTheme {
         CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
             DashboardEstrategico()
+        }
+    }
+}
+
+// ─── Meta Cards ───────────────────────────────────────────────────────────────
+
+@Composable
+fun NoVinculadoMetaCard(onVerDetallesClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BackgroundTxt, RoundedCornerShape(24.dp))
+            .padding(24.dp)
+    ) {
+        Text(
+            text = "Cuenta de Meta",
+            color = TextoPrimario,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "Ve a la configuración para vincular tu cuenta de Facebook/Instagram y ver tus métricas reales.",
+            color = TextoSecundario,
+            fontSize = 14.sp,
+            lineHeight = 20.sp
+        )
+    }
+}
+
+@Composable
+fun TarjetaCanalMeta(stats: MetaStats) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BackgroundTxt, RoundedCornerShape(24.dp))
+            .padding(24.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_account_box), // Use a default icon since we don't have meta icons ready
+                contentDescription = null,
+                tint = Color(0xFF1877F2), // Facebook Blue
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                Text(
+                    text = stats.pageName.ifEmpty { "Mi Página Meta" },
+                    color = TextoPrimario,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Cuenta de Meta (Facebook/Instagram)",
+                    color = TextoSecundario,
+                    fontSize = 12.sp
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Stats row 1
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            StatItem(
+                modifier = Modifier.weight(1f),
+                label = "Seguidores",
+                value = DashboardViewModel.formatCount(stats.followers)
+            )
+            StatItem(
+                modifier = Modifier.weight(1f),
+                label = "Interacciones",
+                value = DashboardViewModel.formatCount(stats.totalInteractions)
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        // Stats row 2
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            StatItem(
+                modifier = Modifier.weight(1f),
+                label = "Me Gusta",
+                value = DashboardViewModel.formatCount(stats.likes)
+            )
+            StatItem(
+                modifier = Modifier.weight(1f),
+                label = "Comentarios",
+                value = DashboardViewModel.formatCount(stats.comments)
+            )
         }
     }
 }

@@ -49,9 +49,21 @@ data class YoutubeStats(
     val fetchedAt: String = ""
 )
 
+
+@Serializable
+data class MetaStats(
+    val pageId: String = "",
+    val pageName: String = "",
+    val followers: Long = 0,
+    val likes: Long = 0,
+    val comments: Long = 0,
+    val totalInteractions: Long = 0,
+    val fetchedAt: String = ""
+)
+
 sealed class DashboardUiState {
     object Loading : DashboardUiState()
-    data class Success(val stats: YoutubeStats) : DashboardUiState()
+    data class Success(val stats: YoutubeStats?, val metaStats: MetaStats? = null) : DashboardUiState()
     data class Error(val message: String) : DashboardUiState()
     /** Canal no vinculado o sin datos en caché */
     object NotLinked : DashboardUiState()
@@ -88,23 +100,59 @@ class DashboardViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = DashboardUiState.Loading
             try {
-                val user = supabase.auth.currentUserOrNull()
+                val session = supabase.auth.currentSessionOrNull()
+                val user = session?.user ?: supabase.auth.currentUserOrNull()
                 if (user == null) {
                     _uiState.value = DashboardUiState.NotLinked
                     return@launch
                 }
 
-                // Intentar cargar de caché primero para dar respuesta inmediata
-                val cached = loadFromCache(user.id)
-                if (cached != null) {
-                    _uiState.value = DashboardUiState.Success(cached)
-                    // Refrescar en segundo plano si hay caché
-                    refreshFromEdgeFunction()
-                    return@launch
+                // 1. Cargar caché de ambos
+                var cachedYoutube = loadFromCache(user.id)
+                var cachedMeta = loadMetaFromCache(user.id)
+
+                if (cachedYoutube != null || cachedMeta != null) {
+                    _uiState.value = DashboardUiState.Success(cachedYoutube, cachedMeta)
                 }
 
-                // Si no hay caché, refrescar obligatoriamente
-                refreshFromEdgeFunction()
+                // 2. Refrescar en segundo plano
+                val googleIdentity = user.identities?.firstOrNull { it.provider == "google" }
+                val facebookIdentity = user.identities?.firstOrNull { it.provider == "facebook" || it.provider == "instagram" }
+                
+                val fbToken = session?.providerToken?.takeIf { session.user?.appMetadata?.get("provider")?.jsonPrimitive?.content == "facebook" }
+                    ?: facebookIdentity?.identityData?.get("provider_token")?.jsonPrimitive?.content
+                    ?: facebookIdentity?.identityData?.get("access_token")?.jsonPrimitive?.content
+
+                // Refrescar YouTube
+                if (googleIdentity != null) {
+                    refreshFromEdgeFunction(null)
+                }
+                
+                // Refrescar Meta
+                if (fbToken != null) {
+                    val freshMeta = refreshMetaFromEdgeFunction(fbToken)
+                    if (freshMeta != null) {
+                        cachedMeta = freshMeta
+                    }
+                }
+                
+                // Si la UI está en éxito o no había nada pero ahora hay Meta
+                if (cachedYoutube != null || cachedMeta != null) {
+                    // Update state carefully so we don't override Youtube success with Error if Meta succeeds but YT fails
+                    val currentState = _uiState.value
+                    if (currentState is DashboardUiState.Success || currentState is DashboardUiState.Loading) {
+                         // Only update if we aren't displaying an explicit error (unless it's just Loading)
+                         // But refreshFromEdgeFunction already sets Success state for Youtube
+                         // We need to merge states. Let's rely on refreshFromEdgeFunction for Youtube.
+                         // For meta, we can manually trigger state update if freshMeta != null
+                         val currentStats = (currentState as? DashboardUiState.Success)?.stats ?: cachedYoutube
+                         _uiState.value = DashboardUiState.Success(currentStats, cachedMeta)
+                    }
+                }
+
+                if (cachedYoutube == null && cachedMeta == null && googleIdentity == null && facebookIdentity == null) {
+                    _uiState.value = DashboardUiState.NotLinked
+                }
 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -240,7 +288,11 @@ class DashboardViewModel : ViewModel() {
                 recentVideos    = parseRecentVideos(data["recentVideos"]?.toString() ?: "[]")
             )
 
-            _uiState.value = DashboardUiState.Success(stats)
+            
+            val currentState = _uiState.value
+            val currentMeta = (currentState as? DashboardUiState.Success)?.metaStats
+            _uiState.value = DashboardUiState.Success(stats, currentMeta)
+
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -276,6 +328,61 @@ class DashboardViewModel : ViewModel() {
             if (_uiState.value !is DashboardUiState.Success || isAuthError) {
                 _uiState.value = DashboardUiState.Error(cleanMsg)
             }
+        }
+    }
+
+    
+    private suspend fun loadMetaFromCache(userId: String): MetaStats? {
+        return try {
+            val response = supabase.postgrest.from("meta_analytics").select {
+                filter { eq("user_id", userId) }
+            }
+            val arr = response.decodeAs<JsonArray>()
+            if (arr.isEmpty()) return null
+
+            val obj = arr[0].jsonObject
+            MetaStats(
+                pageId = obj["page_id"]?.jsonPrimitive?.content ?: "",
+                pageName = obj["page_name"]?.jsonPrimitive?.content ?: "",
+                followers = obj["followers"]?.jsonPrimitive?.longOrNull ?: 0L,
+                likes = obj["likes"]?.jsonPrimitive?.longOrNull ?: 0L,
+                comments = obj["comments"]?.jsonPrimitive?.longOrNull ?: 0L,
+                totalInteractions = obj["total_interactions"]?.jsonPrimitive?.longOrNull ?: 0L,
+                fetchedAt = obj["fetched_at"]?.jsonPrimitive?.content ?: ""
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private suspend fun refreshMetaFromEdgeFunction(providerToken: String?): MetaStats? {
+        if (providerToken == null) return null
+        return try {
+            val requestBody = FetchStatsRequest(providerToken = providerToken)
+            @OptIn(SupabaseInternal::class)
+            val response = supabase.functions.invoke(
+                function = "fetch-meta-stats",
+                body = requestBody
+            )
+            val responseBody = response.body<String>()
+            val responseJson = json.parseToJsonElement(responseBody).jsonObject
+            val success = responseJson["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
+            if (!success) return null
+            
+            val data = responseJson["data"]?.jsonObject ?: return null
+            MetaStats(
+                pageId = data["page_id"]?.jsonPrimitive?.content ?: "",
+                pageName = data["page_name"]?.jsonPrimitive?.content ?: "",
+                followers = data["followers"]?.jsonPrimitive?.longOrNull ?: 0L,
+                likes = data["likes"]?.jsonPrimitive?.longOrNull ?: 0L,
+                comments = data["comments"]?.jsonPrimitive?.longOrNull ?: 0L,
+                totalInteractions = data["total_interactions"]?.jsonPrimitive?.longOrNull ?: 0L,
+                fetchedAt = data["fetched_at"]?.jsonPrimitive?.content ?: ""
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
