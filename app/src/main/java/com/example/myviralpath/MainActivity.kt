@@ -48,7 +48,7 @@ import androidx.compose.material.icons.rounded.Checklist
 import androidx.compose.material.icons.automirrored.rounded.ShowChart
 import androidx.compose.material.icons.rounded.Insights
 import com.example.myviralpath.ui.screens.TendenciasPantalla
-import com.example.myviralpath.ui.screens.VinculacionCuentasScreen
+import com.example.myviralpath.ui.screens.ConfiguracionScreen
 import com.example.myviralpath.ui.theme.MyViralPathTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.graphics.Color
@@ -195,12 +195,28 @@ class MainActivity : ComponentActivity() {
                                                                 if (isInstagramLinked || isYoutubeLinked) {
                                                                     DashboardEstrategico()
                                                                 } else {
-                                                                    VinculacionCuentasScreen(
+                                                                    ConfiguracionScreen(
                                                                         isLoading = isLoading,
+                                                                        isInstagramLinked = isInstagramLinked,
+                                                                        isYoutubeLinked = isYoutubeLinked,
                                                                         onLinkInstagram = { socialViewModel.linkInstagram() },
-                                                                        onLinkYoutube = { socialViewModel.linkYoutube() }
+                                                                        onLinkYoutube = { socialViewModel.linkYoutube() },
+                                                                        onSignOut = { authViewModel.signOut() }
                                                                     )
                                                                 }
+                                                            }
+                                                            AppDestinations.CUENTAS -> {
+                                                                val isLoading by socialViewModel.isLoading.collectAsState()
+                                                                val isInstagramLinked by socialViewModel.isInstagramLinked.collectAsState()
+                                                                val isYoutubeLinked by socialViewModel.isYoutubeLinked.collectAsState()
+                                                                ConfiguracionScreen(
+                                                                    isLoading = isLoading,
+                                                                    isInstagramLinked = isInstagramLinked,
+                                                                    isYoutubeLinked = isYoutubeLinked,
+                                                                    onLinkInstagram = { socialViewModel.linkInstagram() },
+                                                                    onLinkYoutube = { socialViewModel.linkYoutube() },
+                                                                    onSignOut = { authViewModel.signOut() }
+                                                                )
                                                             }
                                                             AppDestinations.PLAN -> PlanEstrategicoScreen(
                                                                 onNavigateToNewContent = { showNewContent = true }
@@ -299,6 +315,7 @@ enum class AppDestinations(
     PLAN("Calendar", Icons.Rounded.CalendarMonth),
     TAREAS("Tasks", Icons.Rounded.Checklist),
     GROWTH("Growth", Icons.AutoMirrored.Rounded.ShowChart),
+    CUENTAS("Cuentas", Icons.Rounded.Person),
 }
 
 @Composable

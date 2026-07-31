@@ -23,8 +23,6 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.intOrNull
 import io.github.jan.supabase.annotations.SupabaseInternal
 
-// ─── Data models ─────────────────────────────────────────────────────────────
-
 @Serializable
 data class RecentVideo(
     val videoId: String = "",
@@ -65,7 +63,6 @@ sealed class DashboardUiState {
     object Loading : DashboardUiState()
     data class Success(val stats: YoutubeStats?, val metaStats: MetaStats? = null) : DashboardUiState()
     data class Error(val message: String) : DashboardUiState()
-    /** Canal no vinculado o sin datos en caché */
     object NotLinked : DashboardUiState()
 }
 
@@ -75,7 +72,7 @@ data class FetchStatsRequest(
     @SerialName("channel_id") val channelId: String? = null
 )
 
-// ─── ViewModel ────────────────────────────────────────────────────────────────
+
 
 class DashboardViewModel : ViewModel() {
 
@@ -107,7 +104,6 @@ class DashboardViewModel : ViewModel() {
                     return@launch
                 }
 
-                // 1. Cargar caché de ambos
                 var cachedYoutube = loadFromCache(user.id)
                 var cachedMeta = loadMetaFromCache(user.id)
 
@@ -115,7 +111,7 @@ class DashboardViewModel : ViewModel() {
                     _uiState.value = DashboardUiState.Success(cachedYoutube, cachedMeta)
                 }
 
-                // 2. Refrescar en segundo plano
+              
                 val googleIdentity = user.identities?.firstOrNull { it.provider == "google" }
                 val facebookIdentity = user.identities?.firstOrNull { it.provider == "facebook" || it.provider == "instagram" }
                 
@@ -123,12 +119,11 @@ class DashboardViewModel : ViewModel() {
                     ?: facebookIdentity?.identityData?.get("provider_token")?.jsonPrimitive?.content
                     ?: facebookIdentity?.identityData?.get("access_token")?.jsonPrimitive?.content
 
-                // Refrescar YouTube
+            
                 if (googleIdentity != null) {
                     refreshFromEdgeFunction(null)
                 }
                 
-                // Refrescar Meta
                 if (fbToken != null) {
                     val freshMeta = refreshMetaFromEdgeFunction(fbToken)
                     if (freshMeta != null) {
@@ -136,15 +131,11 @@ class DashboardViewModel : ViewModel() {
                     }
                 }
                 
-                // Si la UI está en éxito o no había nada pero ahora hay Meta
+
                 if (cachedYoutube != null || cachedMeta != null) {
-                    // Update state carefully so we don't override Youtube success with Error if Meta succeeds but YT fails
+
                     val currentState = _uiState.value
                     if (currentState is DashboardUiState.Success || currentState is DashboardUiState.Loading) {
-                         // Only update if we aren't displaying an explicit error (unless it's just Loading)
-                         // But refreshFromEdgeFunction already sets Success state for Youtube
-                         // We need to merge states. Let's rely on refreshFromEdgeFunction for Youtube.
-                         // For meta, we can manually trigger state update if freshMeta != null
                          val currentStats = (currentState as? DashboardUiState.Success)?.stats ?: cachedYoutube
                          _uiState.value = DashboardUiState.Success(currentStats, cachedMeta)
                     }

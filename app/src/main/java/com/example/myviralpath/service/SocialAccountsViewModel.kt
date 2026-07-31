@@ -47,7 +47,6 @@ class SocialAccountsViewModel : ViewModel() {
         executeLink {
             supabase.auth.linkIdentity(
                 provider = Facebook,
-                redirectUrl = "myviralpath://login-callback",
                 config = {
                     scopes.add("pages_show_list")
                     scopes.add("pages_read_engagement")
@@ -63,7 +62,6 @@ class SocialAccountsViewModel : ViewModel() {
         executeLink {
             supabase.auth.linkIdentity(
                 provider = Google,
-                redirectUrl = "myviralpath://login-callback",
                 config = {
                     scopes.add("https://www.googleapis.com/auth/youtube.readonly")
                     queryParams["prompt"] = "consent"
