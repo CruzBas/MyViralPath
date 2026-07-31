@@ -10,6 +10,7 @@ import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -87,24 +88,68 @@ class PlanEstrategicoViewModel : ViewModel() {
     fun generateNewPlan() {
         viewModelScope.launch {
             _isGenerating.value = true
+            _errorMessage.value = null
             try {
                 val response = supabase.functions.invoke("generate-plan")
-                
-                // Decode the basic response to check for success
-                val jsonResponse = Json.decodeFromString<JsonObject>(response.bodyAsText())
+                val bodyText = response.bodyAsText()
+                val statusCode = response.status.value
+
+                if (statusCode != 200) {
+                    val errorMsg = try {
+                        val json = Json.decodeFromString<JsonObject>(bodyText)
+                        json["error"]?.jsonPrimitive?.content ?: "Error del servidor ($statusCode)"
+                    } catch (_: Exception) {
+                        "Error del servidor ($statusCode)"
+                    }
+                    _errorMessage.value = "❌ $errorMsg"
+                    return@launch
+                }
+
+                val jsonResponse = Json.decodeFromString<JsonObject>(bodyText)
                 val success = jsonResponse["success"]?.jsonPrimitive?.booleanOrNull ?: false
-                
+
                 if (success) {
-                    // Plan created successfully, fetch the updated data
-                    fetchCurrentPlan()
+                    val user = supabase.auth.retrieveUserForCurrentSession()
+                    val today = format.format(Date())
+
+                    val plan = supabase.from("strategic_plans")
+                        .select {
+                            filter {
+                                eq("user_id", user.id)
+                                eq("plan_date", today)
+                            }
+                        }
+                        .decodeSingleOrNull<StrategicPlan>()
+
+                    _currentPlan.value = plan
+
+                    if (plan != null) {
+                        val tasks = supabase.from("next_steps")
+                            .select {
+                                filter { eq("plan_id", plan.id) }
+                            }
+                            .decodeList<NextStep>()
+                        _nextSteps.value = tasks.sortedBy { it.order_index }
+                    }
                 } else {
-                    val errorMsg = jsonResponse["error"]?.jsonPrimitive?.content ?: "Error desconocido"
-                    _errorMessage.value = "Error de IA: $errorMsg"
+                    val errorMsg = jsonResponse["error"]?.jsonPrimitive?.content ?: "Error desconocido de la IA"
+                    _errorMessage.value = "❌ $errorMsg"
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                _errorMessage.value = "Error al conectar con la IA: ${e.message}"
+                val rawMsg = e.message ?: "Error desconocido"
+                val cleanMsg = try {
+                    // The first line of the message may be the response JSON body
+                    val firstLine = rawMsg.lines().firstOrNull { it.trim().startsWith("{") } ?: rawMsg.lines().first()
+                    val json = Json.decodeFromString<JsonObject>(firstLine.trim())
+                    val errField = json["error"]?.jsonPrimitive?.content
+                    val msgField = json["message"]?.jsonPrimitive?.content
+                    errField ?: msgField ?: firstLine
+                } catch (_: Exception) {
+                    rawMsg.lines().first()
+                }
+                _errorMessage.value = "❌ $cleanMsg"
             } finally {
                 _isGenerating.value = false
             }

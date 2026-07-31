@@ -47,13 +47,26 @@ fun PlanEstrategicoScreen(
     val isGenerating by viewModel.isGenerating.collectAsState()
     val currentPlan by viewModel.currentPlan.collectAsState()
     val nextSteps by viewModel.nextSteps.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.fetchCurrentPlan()
     }
 
+    LaunchedEffect(errorMessage) {
+        if (errorMessage != null) {
+            snackbarHostState.showSnackbar(
+                message = errorMessage!!,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.clearError()
+        }
+    }
+
     Scaffold(
         containerColor = BackgroundOscuro,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (currentPlan != null && !isGenerating) {
                 Button(
