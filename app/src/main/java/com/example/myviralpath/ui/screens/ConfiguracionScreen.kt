@@ -17,7 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myviralpath.R
+import com.viralpath.mobile.R
 import com.example.myviralpath.ui.theme.BackgroundOscuro
 import com.example.myviralpath.ui.theme.BackgroundTxt
 import com.example.myviralpath.ui.theme.BordeTxt

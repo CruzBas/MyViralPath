@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.example.myviralpath.service.AuthState
 import com.example.myviralpath.service.AuthViewModel
 import com.example.myviralpath.ui.theme.*
-import com.example.myviralpath.R 
+import com.viralpath.mobile.R
 
 @Composable
 fun PantallaLogin(

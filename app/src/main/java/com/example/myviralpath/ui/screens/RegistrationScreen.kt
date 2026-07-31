@@ -23,7 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myviralpath.R
+import com.viralpath.mobile.R
 import com.example.myviralpath.service.AuthState
 import com.example.myviralpath.service.AuthViewModel
 import com.example.myviralpath.ui.theme.*

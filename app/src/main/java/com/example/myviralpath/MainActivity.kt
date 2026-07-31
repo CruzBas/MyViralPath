@@ -2,6 +2,8 @@ package com.example.myviralpath
 
 import android.content.Intent
 import android.os.Bundle
+import com.facebook.FacebookSdk
+import com.facebook.appevents.AppEventsLogger
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -79,6 +81,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        FacebookSdk.setApplicationId("882749574557113")
+        FacebookSdk.setClientToken("7b357ce406a0421093773b6c6ed9071b")
+        FacebookSdk.sdkInitialize(applicationContext)
+        AppEventsLogger.activateApp(application)
+
         socialViewModel = ViewModelProvider(this)[SocialAccountsViewModel::class.java]
         
         handleIntent(intent)
@@ -87,6 +95,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyViralPathTheme {
                 val authViewModel: AuthViewModel = viewModel()
+                val planEstrategicoViewModel: com.example.myviralpath.service.PlanEstrategicoViewModel = viewModel()
                 val sessionStatus by supabase.auth.sessionStatus.collectAsState(initial = SessionStatus.NotAuthenticated())
                 val onboardingCompleted by authViewModel.onboardingCompleted
                 val snackbarHostState = remember { SnackbarHostState() }
@@ -95,6 +104,16 @@ class MainActivity : ComponentActivity() {
                     if (sessionStatus is SessionStatus.Authenticated) {
                         authViewModel.checkOnboardingStatus()
                         socialViewModel.updateLinkedAccounts()
+                    }
+                }
+
+                // Observar errores del ViewModel de cuentas sociales y mostrar en Snackbar
+                LaunchedEffect(Unit) {
+                    socialViewModel.errorMessage.collect { msg ->
+                        if (msg != null) {
+                            snackbarHostState.showSnackbar(msg)
+                            socialViewModel.clearError()
+                        }
                     }
                 }
 
@@ -219,6 +238,7 @@ class MainActivity : ComponentActivity() {
                                                                 )
                                                             }
                                                             AppDestinations.PLAN -> PlanEstrategicoScreen(
+                                                                viewModel = planEstrategicoViewModel,
                                                                 onNavigateToNewContent = { showNewContent = true }
                                                             )
                                                             else -> Greeting(

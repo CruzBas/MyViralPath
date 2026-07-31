@@ -9,11 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myviralpath.R
+import com.viralpath.mobile.R
 import com.example.myviralpath.service.DashboardUiState
 import com.example.myviralpath.service.DashboardViewModel
 import com.example.myviralpath.service.RecentVideo
@@ -33,10 +29,6 @@ import com.example.myviralpath.service.YoutubeStats
 import com.example.myviralpath.ui.theme.*
 import com.example.myviralpath.ui.components.LocalSnackbarHostState
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
-
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
@@ -46,10 +38,8 @@ import com.example.myviralpath.service.MetaStats
 
 @Composable
 fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
-    val snackbarHostState = LocalSnackbarHostState.current
-    val scope = rememberCoroutineScope()
     val uiState by dashboardViewModel.uiState.collectAsState()
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     LazyColumn(
         modifier = Modifier
@@ -104,7 +94,7 @@ fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
                         containerColor = BackgroundOscuro,
                         contentColor = NaranjaPrimario,
                         indicator = { tabPositions ->
-                            TabRowDefaults.Indicator(
+                            TabRowDefaults.SecondaryIndicator(
                                 Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
                                 color = NaranjaPrimario
                             )
@@ -146,7 +136,7 @@ fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
                         item { TarjetaCanalMeta(stats = metaStats) }
                     } else {
                         item {
-                            NoVinculadoMetaCard(onVerDetallesClick = {}) // Handle meta linking in SocialAccountsViewModel ideally, but here we can just show empty state
+                            NoVinculadoMetaCard(onVerDetallesClick = {}) // Handle meta linking in SocialAccountsViewModel ideally
                         }
                     }
                 }
@@ -364,7 +354,7 @@ fun TarjetaCanalYoutube(stats: YoutubeStats) {
 
         if (stats.topVideoTitle.isNotEmpty()) {
             Spacer(modifier = Modifier.height(20.dp))
-            Divider(color = BordeTxt, thickness = 1.dp)
+            HorizontalDivider(color = BordeTxt, thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = "🏆 Video más visto", color = TextoSecundario, fontSize = 11.sp)
             Spacer(modifier = Modifier.height(4.dp))
@@ -437,7 +427,7 @@ fun TendenciasReales(videos: List<RecentVideo>) {
     LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         items(videos.size) { idx ->
             val video = videos[idx]
-            val progreso = if (videos.maxOfOrNull { it.views } ?: 0 > 0) {
+            val progreso = if ((videos.maxOfOrNull { it.views } ?: 0L) > 0L) {
                 video.views.toFloat() / (videos.maxOf { it.views }.toFloat())
             } else 0f
 
@@ -618,6 +608,15 @@ fun NoVinculadoMetaCard(onVerDetallesClick: () -> Unit) {
             fontSize = 14.sp,
             lineHeight = 20.sp
         )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = onVerDetallesClick,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(25.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = NaranjaPrimario)
+        ) {
+            Text("Vincular Meta", color = TextoPrimario, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

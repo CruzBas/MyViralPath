@@ -1,3 +1,6 @@
 <resources>
-    <string name="app_name">MyViralPath</string>
+    <string name="app_name">ViralPath</string>
+    <string name="facebook_app_id">882749574557113</string>
+    <string name="facebook_client_token">7b357ce406a0421093773b6c6ed9071b</string>
+    <string name="fb_login_protocol_scheme">fb882749574557113</string>
 </resources>

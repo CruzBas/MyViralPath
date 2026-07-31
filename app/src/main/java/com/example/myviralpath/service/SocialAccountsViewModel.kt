@@ -21,16 +21,19 @@ class SocialAccountsViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // Estado de error para mostrar en la UI via Snackbar
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-
+    fun clearError() {
+        _errorMessage.value = null
+    }
 
     fun updateLinkedAccounts() {
         viewModelScope.launch {
             try {
-
                 val user = supabase.auth.retrieveUserForCurrentSession()
                 val identities = user.identities
-                
                 if (identities != null) {
                     _isYoutubeLinked.value = identities.any { it.provider == "google" }
                     _isInstagramLinked.value = identities.any { it.provider == "facebook" || it.provider == "instagram" }
@@ -47,12 +50,12 @@ class SocialAccountsViewModel : ViewModel() {
         executeLink {
             supabase.auth.linkIdentity(
                 provider = Facebook,
+                redirectUrl = "myviralpath://login-callback",
                 config = {
                     scopes.add("pages_show_list")
                     scopes.add("pages_read_engagement")
                     scopes.add("instagram_basic")
                     scopes.add("instagram_manage_insights")
-                    queryParams["prompt"] = "select_account"
                 }
             )
         }
@@ -62,6 +65,7 @@ class SocialAccountsViewModel : ViewModel() {
         executeLink {
             supabase.auth.linkIdentity(
                 provider = Google,
+                redirectUrl = "myviralpath://login-callback",
                 config = {
                     scopes.add("https://www.googleapis.com/auth/youtube.readonly")
                     queryParams["prompt"] = "consent"
@@ -74,10 +78,13 @@ class SocialAccountsViewModel : ViewModel() {
     private fun executeLink(block: suspend () -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
+            _errorMessage.value = null
             try {
                 block()
             } catch (e: Exception) {
                 e.printStackTrace()
+                val msg = e.localizedMessage ?: e.message ?: "Error desconocido"
+                _errorMessage.value = "Error al vincular cuenta: $msg"
             } finally {
                 _isLoading.value = false
             }

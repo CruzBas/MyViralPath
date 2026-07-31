@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myviralpath"
+    namespace = "com.viralpath.mobile"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.example.myviralpath"
+        applicationId = "com.viralpath.mobile"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.facebook.login)
     testImplementation(libs.junit)
     implementation(platform("io.github.jan-tennert.supabase:bom:3.6.0"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
