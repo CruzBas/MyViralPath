@@ -101,7 +101,7 @@ INSTRUCCIÓN: Responde SOLO con JSON válido, sin texto adicional, sin markdown,
 Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Genera exactamente 2 content_ideas y 3 next_steps.`;
 
     // 3. Call Gemini API (gemini-2.5-flash is the active stable model)
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const geminiRes = await fetch(geminiUrl, {
       method: 'POST',
