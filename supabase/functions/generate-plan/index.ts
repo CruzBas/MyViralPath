@@ -100,7 +100,6 @@ INSTRUCCIÓN: Responde SOLO con JSON válido, sin texto adicional, sin markdown,
 
 Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Genera exactamente 2 content_ideas y 3 next_steps.`;
 
-    // 3. Call Gemini API (gemini-2.5-flash is the active stable model)
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const geminiRes = await fetch(geminiUrl, {
@@ -138,7 +137,7 @@ Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Gener
       return jsonError("AI returned invalid JSON", 500);
     }
 
-    // 4. Save to database
+
     const today = new Date().toISOString().split('T')[0];
 
     const { data: existingPlan } = await supabaseAdmin
@@ -148,7 +147,7 @@ Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Gener
       .eq('plan_date', today)
       .maybeSingle();
 
-    // NOTE: recommended_platform is a USER-DEFINED enum, so we omit it to avoid cast errors
+
     const planPayload: any = {
       user_id: user.id,
       plan_date: today,
