@@ -100,7 +100,7 @@ INSTRUCCIÓN: Responde SOLO con JSON válido, sin texto adicional, sin markdown,
 
 Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Genera exactamente 2 content_ideas y 3 next_steps.`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash?key=AQ.Ab8RN6Ikcgcuo_CYJyoNb90FvwgSqi8gxAdezvB3UC7DKOwkNw`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 
     const geminiRes = await fetch(geminiUrl, {
@@ -111,6 +111,7 @@ Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Gener
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 1024,
+          responseMimeType: "application/json",
         }
       })
     });
@@ -131,13 +132,19 @@ Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Gener
 
     let aiJson: any;
     try {
-      const cleaned = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-      aiJson = JSON.parse(cleaned);
+      const firstBrace = rawText.indexOf('{');
+      const lastBrace = rawText.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        const jsonStr = rawText.substring(firstBrace, lastBrace + 1);
+        aiJson = JSON.parse(jsonStr);
+      } else {
+        const cleaned = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+        aiJson = JSON.parse(cleaned);
+      }
     } catch (e) {
       console.error("JSON parse error. Raw:", rawText);
       return jsonError("AI returned invalid JSON", 500);
     }
-
 
     const today = new Date().toISOString().split('T')[0];
 
