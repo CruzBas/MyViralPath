@@ -22,6 +22,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 class PlanEstrategicoViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
@@ -39,7 +40,9 @@ class PlanEstrategicoViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    private val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
 
     fun clearError() {
         _errorMessage.value = null
@@ -140,11 +143,12 @@ class PlanEstrategicoViewModel : ViewModel() {
                 e.printStackTrace()
                 val rawMsg = e.message ?: "Error desconocido"
                 val cleanMsg = try {
-                    // The first line of the message may be the response JSON body
+                    // La primera línea del mensaje puede contener el cuerpo JSON de la respuesta
                     val firstLine = rawMsg.lines().firstOrNull { it.trim().startsWith("{") } ?: rawMsg.lines().first()
                     val json = Json.decodeFromString<JsonObject>(firstLine.trim())
                     val errField = json["error"]?.jsonPrimitive?.content
                     val msgField = json["message"]?.jsonPrimitive?.content
+                    // Retorna el campo de error, si no existe el de mensaje, o la línea original completa
                     errField ?: msgField ?: firstLine
                 } catch (_: Exception) {
                     rawMsg.lines().first()
@@ -163,13 +167,13 @@ class PlanEstrategicoViewModel : ViewModel() {
                     .update(
                         {
                             set("is_completed", isCompleted)
-                            // Optionally set completed_at
+                            // Opcionalmente se podría establecer completed_at aquí
                         }
                     ) {
                         filter { eq("id", taskId) }
                     }
                 
-                // Update local state without re-fetching everything
+                // Actualizar el estado local (UI) sin tener que volver a consultar toda la lista de tareas
                 val currentTasks = _nextSteps.value.toMutableList()
                 val index = currentTasks.indexOfFirst { it.id == taskId }
                 if (index != -1) {

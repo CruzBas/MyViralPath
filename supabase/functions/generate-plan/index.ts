@@ -69,7 +69,7 @@ DATOS DEL CREADOR:
 - YouTube: ${ytSubs} suscriptores, ${ytViews} vistas totales
 - Meta (Instagram/Facebook): ${metaFollowers} seguidores, ${metaInteractions} interacciones
 
-INSTRUCCIÓN: Responde SOLO con JSON válido, sin texto adicional, sin markdown, sin explicaciones. El JSON debe tener exactamente esta estructura:
+INSTRUCCIÓN: Responde SOLO con JSON válido, sin texto adicional, sin markdown, sin explicaciones. El JSON debe tener exactamente esta estructura y NO debe tener comas al final de los últimos elementos (trailing commas):
 {
   "best_posting_time": "HH:MM",
   "opportunity_score": 75,
@@ -110,7 +110,7 @@ Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Gener
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 8192,
           responseMimeType: "application/json",
         }
       })
@@ -134,16 +134,25 @@ Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Gener
     try {
       const firstBrace = rawText.indexOf('{');
       const lastBrace = rawText.lastIndexOf('}');
+      let jsonStr = "";
+
+      // Remove any markdown blocks if present
       if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        const jsonStr = rawText.substring(firstBrace, lastBrace + 1);
-        aiJson = JSON.parse(jsonStr);
+        jsonStr = rawText.substring(firstBrace, lastBrace + 1);
       } else {
-        const cleaned = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-        aiJson = JSON.parse(cleaned);
+        jsonStr = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
       }
-    } catch (e) {
+
+      // Use new Function to parse the JSON leniently (allows unquoted keys, trailing commas, etc)
+      try {
+        aiJson = new Function('return ' + jsonStr)();
+      } catch (innerE) {
+        // If it got truncated and is missing the final closing brace, try appending it
+        aiJson = new Function('return ' + jsonStr + '}')();
+      }
+    } catch (e: any) {
       console.error("JSON parse error. Raw:", rawText);
-      return jsonError("AI returned invalid JSON", 500);
+      return jsonError(`AI returned invalid JSON: ${e.message}. Raw text: ${rawText}`, 500);
     }
 
     const today = new Date().toISOString().split('T')[0];
@@ -156,14 +165,20 @@ Personaliza el contenido al nicho "${niche}" y plataformas "${platforms}". Gener
       .maybeSingle();
 
 
+    let compLvl = aiJson.competition_level ? String(aiJson.competition_level).toLowerCase().trim() : 'medium';
+    if (!['low', 'medium', 'high'].includes(compLvl)) compLvl = 'medium';
+
+    let growthPot = aiJson.growth_potential ? String(aiJson.growth_potential).toLowerCase().trim() : 'medium';
+    if (!['low', 'medium', 'high'].includes(growthPot)) growthPot = 'medium';
+
     const planPayload: any = {
       user_id: user.id,
       plan_date: today,
       content_ideas: aiJson.content_ideas || [],
       best_posting_time: aiJson.best_posting_time || null,
-      opportunity_score: aiJson.opportunity_score || null,
-      competition_level: aiJson.competition_level || null,
-      growth_potential: aiJson.growth_potential || null,
+      opportunity_score: aiJson.opportunity_score ? Number(aiJson.opportunity_score) : null,
+      competition_level: compLvl,
+      growth_potential: growthPot,
       updated_at: new Date().toISOString()
     };
 

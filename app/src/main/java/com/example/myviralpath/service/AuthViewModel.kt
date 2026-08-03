@@ -98,7 +98,7 @@ class AuthViewModel : ViewModel() {
                     this.password = pass
                 }
                 _authState.value = AuthState.Success("¡Bienvenido de nuevo!")
-                // Fetch onboarding status on login
+                // Obtener estado de onboarding al iniciar sesión
                 checkOnboardingStatus()
             } catch (e: Exception) {
                 val notice = when {

@@ -41,7 +41,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun MyViralPathTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    // Color dinámico está disponible en Android 12+
 
     //Se cambio a falsepar que Android no intente pintar la app con los colores de fondo del celular del usuario.
     dynamicColor: Boolean = false,

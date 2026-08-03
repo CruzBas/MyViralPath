@@ -61,7 +61,7 @@ fun ConfiguracionScreen(
 
         SocialConnectionCard(
             title = "YouTube",
-            iconRes = R.drawable.ic_launcher_foreground, // fallback icon since we don't have youtube specific one imported
+            iconRes = R.drawable.ic_launcher_foreground, // Icono alternativo ya que no tenemos un icono específico de youtube importado
             iconTint = Color(0xFFFF0000),
             isLinked = isYoutubeLinked,
             isLoading = isLoading,
@@ -72,7 +72,7 @@ fun ConfiguracionScreen(
 
         SocialConnectionCard(
             title = "Meta (Facebook / Instagram)",
-            iconRes = R.drawable.ic_account_box, // fallback icon
+            iconRes = R.drawable.ic_account_box, // Icono alternativo
             iconTint = Color(0xFF1877F2),
             isLinked = isInstagramLinked,
             isLoading = isLoading,

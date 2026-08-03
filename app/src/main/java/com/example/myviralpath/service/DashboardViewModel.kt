@@ -212,12 +212,12 @@ class DashboardViewModel : ViewModel() {
             val user = session?.user ?: supabase.auth.retrieveUserForCurrentSession()
             val googleIdentity = user.identities?.firstOrNull { it.provider == "google" }
 
-            // 2. Try to find the provider token
+            // 2. Intentar obtener el token del proveedor
             val providerToken = session?.providerToken
                 ?: googleIdentity?.identityData?.get("provider_token")?.jsonPrimitive?.content
                 ?: googleIdentity?.identityData?.get("access_token")?.jsonPrimitive?.content
 
-            // 3. Validation: If we have NO token and NO cached channel, we need Google Auth
+            // 3. Validación: Si no tenemos token ni canal en caché, necesitamos autenticación de Google
             if (providerToken == null && cachedChannelId.isNullOrEmpty()) {
                 _uiState.value = DashboardUiState.Error(
                     "Tu sesión actual no tiene permisos de YouTube. Por favor, pulsa 'Reintentar' para sincronizar con Google."
@@ -225,7 +225,7 @@ class DashboardViewModel : ViewModel() {
                 return
             }
 
-            // Build request body using data class to ensure correct serialization and headers
+            // Construir el cuerpo de la petición usando la clase de datos para asegurar serialización correcta
             val requestBody = FetchStatsRequest(
                 providerToken = providerToken,
                 channelId = cachedChannelId
@@ -287,13 +287,13 @@ class DashboardViewModel : ViewModel() {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            // Don't override success state if we already have cached data
+            // No sobrescribir el estado de éxito si ya tenemos datos en caché
             val errorMsg = e.localizedMessage ?: "Error al conectar con YouTube"
             
-            // Parse exception to avoid ugly raw strings
+            // Analizar la excepción para evitar mostrar cadenas de texto crudas
             var cleanMsg = if (errorMsg.contains("\"error\":")) {
                 try {
-                    // try to extract the inner JSON error if present in the exception string
+                    // Intentar extraer el error JSON interno si está presente en la excepción
                     val jsonPart = errorMsg.substringBefore("}\nURL:").plus("}")
                     val parsed = json.parseToJsonElement(jsonPart).jsonObject
                     parsed["error"]?.jsonPrimitive?.content ?: "Error al conectar con YouTube"
@@ -315,7 +315,7 @@ class DashboardViewModel : ViewModel() {
                 cleanMsg = "Sesión de Google expirada o sin permisos. Pulsa 'Reintentar' para sincronizar con Google."
             }
 
-            // Override success state ONLY if it's an auth error, so the user can re-authenticate
+            // Sobrescribir el estado de éxito SOLO si es un error de autenticación, para que el usuario pueda volver a conectarse
             if (_uiState.value !is DashboardUiState.Success || isAuthError) {
                 _uiState.value = DashboardUiState.Error(cleanMsg)
             }

@@ -136,7 +136,7 @@ fun DashboardEstrategico(dashboardViewModel: DashboardViewModel = viewModel()) {
                         item { TarjetaCanalMeta(stats = metaStats) }
                     } else {
                         item {
-                            NoVinculadoMetaCard(onVerDetallesClick = {}) // Handle meta linking in SocialAccountsViewModel ideally
+                            NoVinculadoMetaCard(onVerDetallesClick = {}) // Idealmente manejar la vinculación de meta en SocialAccountsViewModel
                         }
                     }
                 }
@@ -333,7 +333,7 @@ fun TarjetaCanalYoutube(stats: YoutubeStats) {
         }
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Stats row
+        // Fila de estadísticas
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatItem(
                 modifier = Modifier.weight(1f),
@@ -630,9 +630,9 @@ fun TarjetaCanalMeta(stats: MetaStats) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_account_box), // Use a default icon since we don't have meta icons ready
+                painter = painterResource(id = R.drawable.ic_account_box), // Usar un icono por defecto ya que no tenemos los iconos de meta listos
                 contentDescription = null,
-                tint = Color(0xFF1877F2), // Facebook Blue
+                tint = Color(0xFF1877F2), // Azul de Facebook
                 modifier = Modifier.size(28.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
@@ -652,7 +652,7 @@ fun TarjetaCanalMeta(stats: MetaStats) {
         }
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Stats row 1
+        // Fila de estadísticas 1
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatItem(
                 modifier = Modifier.weight(1f),
@@ -666,7 +666,7 @@ fun TarjetaCanalMeta(stats: MetaStats) {
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
-        // Stats row 2
+        // Fila de estadísticas 2
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatItem(
                 modifier = Modifier.weight(1f),

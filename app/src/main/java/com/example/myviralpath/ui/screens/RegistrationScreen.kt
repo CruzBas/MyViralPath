@@ -255,7 +255,7 @@ fun SocialButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            // Icon placeholder
+            // Espacio para icono
             Box(
                 modifier = Modifier
                     .size(24.dp)
@@ -279,7 +279,7 @@ fun SocialButton(
                 textAlign = TextAlign.Center
             )
             
-            // Just to keep the text centered
+            // Solo para mantener el texto centrado
             Spacer(modifier = Modifier.size(24.dp))
         }
     }

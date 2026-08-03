@@ -241,10 +241,6 @@ class MainActivity : ComponentActivity() {
                                                                 viewModel = planEstrategicoViewModel,
                                                                 onNavigateToNewContent = { showNewContent = true }
                                                             )
-                                                            else -> Greeting(
-                                                                name = currentDestination.label,
-                                                                onSignOut = { authViewModel.signOut() }
-                                                            )
                                                         }
                                                     }
                                                 }
@@ -333,8 +329,6 @@ enum class AppDestinations(
 ) {
     DASHBOARD("Strategy", Icons.Rounded.Insights),
     PLAN("Calendar", Icons.Rounded.CalendarMonth),
-    TAREAS("Tasks", Icons.Rounded.Checklist),
-    GROWTH("Growth", Icons.AutoMirrored.Rounded.ShowChart),
     CUENTAS("Cuentas", Icons.Rounded.Person),
 }
 
